@@ -1,0 +1,38 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pin externo -->
+  <path d="M256 40C180 40 120 100 120 176c0 90 136 256 136 256s136-166 136-256c0-76-60-136-136-136z" fill="none" stroke="#123B5A" stroke-width="16"></path>
+
+  <!-- Corpo do calendário -->
+  <rect x="176" y="140" width="160" height="140" rx="16" fill="#1E4E6E"></rect>
+
+  <!-- Parte inferior (triângulo do pin) -->
+  <polygon points="256,280 200,340 312,340" fill="#6B8FA8"></polygon>
+
+  <!-- Suportes do calendário -->
+  <rect x="200" y="120" width="20" height="30" fill="#D6CBB8"></rect>
+  <rect x="292" y="120" width="20" height="30" fill="#D6CBB8"></rect>
+
+  <!-- Grid (quadradinhos) -->
+  <g fill="#8FAFC4">
+    <rect x="200" y="170" width="20" height="20"></rect>
+    <rect x="230" y="170" width="20" height="20"></rect>
+    <rect x="260" y="170" width="20" height="20"></rect>
+
+    <rect x="200" y="200" width="20" height="20"></rect>
+    <rect x="230" y="200" width="20" height="20"></rect>
+    <rect x="260" y="200" width="20" height="20"></rect>
+
+    <rect x="200" y="230" width="20" height="20"></rect>
+    <rect x="230" y="230" width="20" height="20"></rect>
+  </g>
+
+  <!-- Quadrados destacados -->
+  <g fill="#D6CBB8">
+    <rect x="290" y="170" width="20" height="20"></rect>
+    <rect x="290" y="200" width="20" height="20"></rect>
+    <rect x="260" y="230" width="20" height="20"></rect>
+  </g>
+
+  <!-- Check -->
+  <path d="M265 210 l10 10 l20 -25" fill="none" stroke="#D6CBB8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
