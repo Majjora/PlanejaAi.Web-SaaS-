@@ -270,7 +270,32 @@ namespace PlanejaAi.Controllers
                     EnableSsl = true,
                 };
 
-                string corpoHtml = $@"<div style='font-family: Arial; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'><h2>Recuperação de Senha</h2><p>Olá <strong>{nomeUsuario}</strong>, clique no botão para redefinir:</p><a href='{linkRedefinicao}' style='background: #547792; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Redefinir Senha</a></div>";
+                string corpoHtml = $@"
+    <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; color: #213448;'>
+        <h2 style='color: #547792;'>Recuperação de Senha</h2>
+        <p>Olá <strong>{nomeUsuario}</strong>,</p>
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Planeja Aí</strong>. Clique no botão abaixo para criar uma nova credencial:</p>
+        
+        <div style='margin: 30px 0;'>
+            <a href='{linkRedefinicao}' style='background: #547792; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Redefinir Minha Senha</a>
+        </div>
+
+        <hr style='border: 0; border-top: 2px solid #f2dede; margin-top: 20px;'>
+        
+        <div style='background-color: #fcf8e3; padding: 15px; border-radius: 5px; border: 1px solid #faebcc;'>
+            <p style='font-size: 0.9rem; color: #8a6d3b; margin: 0;'>
+                <strong><span style='color: #a94442;'>⚠️ Atenção:</span> Não foi você quem solicitou?</strong>
+            </p>
+            <p style='font-size: 0.85rem; color: #333; margin-top: 5px;'>
+                Se você não iniciou este processo, sua conta pode estar sob tentativa de acesso indevido. 
+                <strong>Não compartilhe este link com ninguém.</strong> Por segurança, recomendamos que acesse o sistema diretamente e atualize seus dados de segurança.
+            </p>
+        </div>
+        
+        <p style='font-size: 0.85rem; color: #666; margin-top: 15px;'>
+            Precisa de ajuda urgente? Fale com nosso time: <a href='mailto:suporte@planejaai.com' style='color: #547792; font-weight: bold;'>suporte@planejaai.com</a>
+        </p>
+    </div>";
                 var mailMessage = new MailMessage { From = new MailAddress("felps.curreia@gmail.com", "Planeja Aí"), Subject = "Recuperação de Senha", Body = corpoHtml, IsBodyHtml = true };
                 mailMessage.To.Add(emailDestino);
                 smtpClient.Send(mailMessage);

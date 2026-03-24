@@ -1,51 +1,47 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
+    var perfil = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
     ViewData["Title"] = "Home";
 }
 
 <style>
     /* -----------------------------------------------------------
-           1. VARIAVEIS DE CORES - Refinamento da Paleta "Planeja Aí"
-           ----------------------------------------------------------- */
+               1. VARIAVEIS DE CORES - Paleta Planeja Aí
+               ----------------------------------------------------------- */
     :root {
-        /* Originais da sua paleta (para referência) */
         --p-clara: #94B4C1;
         --p-bege: #EAE0CF;
         --p-escura: #213448;
         --p-media: #547792;
-        /* --- CONFIGURAÇÃO TEMA CLARO (SOL) - REFINADO --- */
-        /* Mudamos o fundo bege para um branco limpo e usamos o bege em bordas */
         --bg-body: #ffffff;
         --bg-card: #fdfdfd;
         --text-main: var(--p-escura);
         --text-muted: var(--p-media);
         --accent: var(--p-media);
-        --border-card: var(--p-bege); /* Bege como detalhe sutil */
-        /* Banner Claro: Gradiente suave usando o azul claro da paleta */
+        --border-card: var(--p-bege);
         --banner-grad: linear-gradient(135deg, var(--p-media), var(--p-clara));
         --shadow-main: 0 4px 15px rgba(33, 52, 72, 0.05);
     }
 
     [data-theme="dark"] {
-        /* --- CONFIGURAÇÃO TEMA ESCURO (LUA) --- */
         --bg-body: var(--p-escura);
-        --bg-card: rgba(33, 52, 72, 0.7); /* Azul escuro com transparência */
+        --bg-card: rgba(33, 52, 72, 0.7);
         --text-main: var(--p-bege);
         --text-muted: var(--p-clara);
         --accent: var(--p-clara);
-        --border-card: rgba(148, 180, 193, 0.1); /* Azul claro bem sutil */
-        /* Banner Escuro: Gradiente profundo */
+        --border-card: rgba(148, 180, 193, 0.1);
         --banner-grad: linear-gradient(135deg, #111e29, #000000);
         --shadow-main: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     /* -----------------------------------------------------------
-           2. ESTILOS GERAIS E RESPONSIVIDADE
-           ----------------------------------------------------------- */
+               2. ESTILOS DOS CARDS (O SEGREDO DO ESTILO)
+               ----------------------------------------------------------- */
     body {
         background-color: var(--bg-body);
         color: var(--text-main);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        transition: all 0.3s ease;
+        font-family: 'Segoe UI', sans-serif;
     }
 
     .home-container {
@@ -54,7 +50,6 @@
         margin: 0 auto;
     }
 
-    /* --- Banner --- */
     .welcome-banner {
         background: var(--banner-grad);
         padding: 40px;
@@ -63,8 +58,6 @@
         box-shadow: var(--shadow-main);
     }
 
-    /* --- Grid de Cards Responsiva --- */
-    /* row-cols-1 (mobile), row-cols-md-2 (tablet), row-cols-lg-3 (desktop) */
     .card-modulo {
         background-color: var(--bg-card);
         border: 2px solid var(--border-card);
@@ -72,11 +65,12 @@
         padding: 2.5rem 1.5rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-align: center;
-        height: 100%; /* Garante altura igual */
+        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        cursor: pointer;
     }
 
         .card-modulo:hover {
@@ -113,14 +107,13 @@
         color: inherit !important;
     }
 
-    /* --- Chatbot FAB --- */
     .chatbot-fab {
         position: fixed;
         bottom: 30px;
         right: 30px;
         width: 65px;
         height: 65px;
-        background-color: var(--cor-media, #547792); /* Fallback case layout não carregue */
+        background-color: var(--p-media);
         color: white;
         border-radius: 50%;
         display: flex;
@@ -130,14 +123,9 @@
         cursor: pointer;
         box-shadow: 0 8px 25px rgba(84, 119, 146, 0.3);
         z-index: 1000;
-        transition: all 0.3s ease;
+        transition: 0.3s;
     }
 
-        .chatbot-fab:hover {
-            transform: scale(1.1) rotate(10deg);
-        }
-
-    /* --- Footer Políticos --- */
     .footer-politica {
         margin-top: 60px;
         padding: 20px;
@@ -154,10 +142,11 @@
             <i class="fa-regular fa-id-card me-2"></i>
             Bom dia, <span style="color: var(--p-bege);">@ViewBag.NomeUsuario</span>!
         </h1>
-        <p class="fs-5 mb-0opacity-75">Vamos planejar algo incrível hoje?</p>
+        <p class="fs-5 mb-0 opacity-75">Vamos planejar algo incrível hoje?</p>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
         <div class="col">
             <a href="@Url.Action("Criar", "Eventos")">
                 <div class="card-modulo">
@@ -179,11 +168,21 @@
         </div>
 
         <div class="col">
+            <a asp-controller="Clientes" asp-action="Index">
+                <div class="card-modulo">
+                    <div class="icon-box"><i class="fa-solid fa-users-gear"></i></div>
+                    <h5 class="card-title">Clientes</h5>
+                    <p class="card-text">Gestão da sua carteira de clientes.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col">
             <a href="@Url.Action("Index", "Fornecedores")">
                 <div class="card-modulo">
                     <div class="icon-box"><i class="fa-solid fa-handshake"></i></div>
                     <h5 class="card-title">Fornecedores</h5>
-                    <p class="card-text">Sua rede de parceiros parceiros.</p>
+                    <p class="card-text">Sua rede de parceiros.</p>
                 </div>
             </a>
         </div>
@@ -198,6 +197,21 @@
             </a>
         </div>
 
+        @if (perfil == "owner")
+        {
+            <div class="col">
+                <a href="@Url.Action("Cadastro", "Empresa")">
+                    <div class="card-modulo">
+                        <div class="icon-box">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <h5 class="card-title">Nova Empresa</h5>
+                        <p class="card-text">Configurações globais e acessos.</p>
+                    </div>
+                </a>
+            </div>
+        }
+
         <div class="col">
             <a href="@Url.Action("Sair", "Login")">
                 <div class="card-modulo">
@@ -211,8 +225,8 @@
 
     <div class="footer-politica">
         <p>&copy; 2024 PlanejaAi - Soluções Integradas</p>
-        <a href="#" class="me-3">Políticas de Privacidade</a> |
-        <a href="#" class="ms-3">Termos de Uso</a>
+        <a href="#">Políticas de Privacidade</a> |
+        <a href="#">Termos de Uso</a>
     </div>
 </div>
 

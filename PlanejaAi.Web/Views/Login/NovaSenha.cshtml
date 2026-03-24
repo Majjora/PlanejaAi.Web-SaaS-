@@ -21,6 +21,7 @@
             --bg-fundo: var(--cor-bege);
             --bg-cartao: #ffffff;
             --texto-principal: var(--cor-escura);
+            --texto-suporte: #6c757d; /* Cinza para modo claro */
             --btn-bg: var(--cor-media);
             --btn-texto: #ffffff;
         }
@@ -29,6 +30,7 @@
             --bg-fundo: var(--cor-escura);
             --bg-cartao: var(--cor-media);
             --texto-principal: var(--cor-bege);
+            --texto-suporte: var(--cor-bege); /* Texto claro no modo escuro */
             --btn-bg: var(--cor-clara);
             --btn-texto: var(--cor-escura);
         }
@@ -61,15 +63,16 @@
             width: auto;
         }
 
-        .logo-dark {
+        /* CORREÇÃO DAS LOGOS: Esconde por padrão e mostra conforme o tema */
+        .logo-light, .logo-dark {
             display: none;
         }
 
-        :root:not([data-theme="dark"]) .icon-sun, :root:not([data-theme="dark"]) .logo-light {
+        :root:not([data-theme="dark"]) .logo-light {
             display: block;
         }
 
-        [data-theme="dark"] .icon-moon, [data-theme="dark"] .logo-dark {
+        [data-theme="dark"] .logo-dark {
             display: block;
         }
 
@@ -93,11 +96,13 @@
             height: 28px;
         }
 
-        .icon-sun {
+        :root:not([data-theme="dark"]) .icon-sun {
+            display: block;
             fill: var(--cor-escura);
         }
 
-        .icon-moon {
+        [data-theme="dark"] .icon-moon {
+            display: block;
             fill: var(--cor-bege);
         }
 
@@ -131,17 +136,30 @@
                 color: var(--btn-texto);
             }
 
+        /* Estilo da mensagem de diretriz */
+        .diretriz-texto {
+            color: var(--texto-suporte) !important;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
         [data-theme="dark"] .form-control {
             background-color: var(--cor-escura);
             color: var(--cor-bege);
             border: 1px solid var(--cor-clara);
         }
+
+            [data-theme="dark"] .form-control::placeholder {
+                color: rgba(234, 224, 207, 0.5);
+            }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div class="logo-container d-flex align-items-center">
+        <div class="logo-container">
             <img src="/images/logo-claro.svg" alt="Logo" class="logo-light custom-logo-size" />
             <img src="/images/logo-escuro.svg" alt="Logo" class="logo-dark custom-logo-size" />
             <span class="logo-text d-none d-md-block">Planeja Aí</span>
@@ -172,26 +190,24 @@
                     <p>Crie uma senha forte para sua segurança.</p>
                 </div>
 
-                @* MENSAGEM DE ERRO VINDA DO CONTROLLER (C#) *@
                 @if (ViewBag.Erro != null)
                 {
                     <div class="alert alert-danger text-center py-2 mb-3" style="font-size: 0.85rem;">
                         <i class="fa-solid fa-triangle-exclamation me-2"></i> @ViewBag.Erro
                     </div>
                 }
-            
+
                 <form asp-action="NovaSenha" method="post" novalidate class="needs-validation">
                     <input type="hidden" name="token" value="@token" />
 
                     <div class="mb-4">
-                        <label class="form-label">Nova Senha</label>
+                        <label class="form-label">Digite sua nova senha:</label>
                         <input type="password"
                                name="novaSenha"
                                id="novaSenha"
                                class="form-control"
                                required
                                minlength="8"
-                               @* REGEX ATUALIZADO: (?=.*\d) garante pelo menos um número *@
                                pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[!@@#$%^&*()_+\-=\[\]{};':\\|,.<>\/?]).{8,}$"
                                placeholder="Digite a nova senha" />
 
@@ -199,8 +215,7 @@
                             A senha não atende aos requisitos mínimos de segurança.
                         </div>
 
-                        @* Legenda formal abaixo do campo *@
-                        <div class="mt-2 text-muted" style="font-size: 0.8rem; line-height: 1.4;">
+                        <div class="diretriz-texto">
                             <i class="fa-solid fa-shield-halved me-1"></i>
                             Diretriz de Segurança: A senha deve conter no mínimo 8 caracteres, incluindo obrigatoriamente letras maiúsculas, números e caracteres especiais.
                         </div>
@@ -213,18 +228,21 @@
     </div>
 
     <script>
-        // Tema
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme) { document.documentElement.setAttribute('data-theme', currentTheme); }
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
 
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
-            else { document.documentElement.removeAttribute('data-theme'); }
+        // Inicializar tema
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') { html.setAttribute('data-theme', 'dark'); }
+
+        themeToggle.addEventListener('click', () => {
+            let theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            if (theme === 'dark') { html.setAttribute('data-theme', 'dark'); }
+            else { html.removeAttribute('data-theme'); }
             localStorage.setItem('theme', theme);
         });
 
-        // Validação do formulário
+        // Validação Bootstrap
         (function () {
             'use strict'
             var forms = document.querySelectorAll('.needs-validation')
