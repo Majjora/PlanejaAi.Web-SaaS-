@@ -4,142 +4,152 @@
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
 <style>
-    /* 1. CORES BASEADAS NA SUA PALETA */
     :root {
-        --cor-escura-planeja: #213448;
-        --cor-bege-planeja: #EAE0CF;
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
     }
 
-    /* 2. TEXTO DIGITADO - MODO CLARO (PADRÃO) */
-    #inputBusca {
-        color: var(--cor-escura-planeja) !important;
-        -webkit-text-fill-color: var(--cor-escura-planeja) !important;
+    /* 1. FUNDO DA PÁGINA */
+    body {
+        background-color: var(--cor-bege) !important;
+        color: var(--cor-escura);
+        transition: all 0.3s ease;
     }
 
-    /* 3. TEXTO DIGITADO - MODO ESCURO (FORÇAR BRANCO/BEGE) */
-    /* Aqui está o segredo: o seletor agora olha para o [data-theme="dark"] que está no seu Layout */
-    [data-theme="dark"] #inputBusca,
-    [data-theme="dark"] .input-group #inputBusca {
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura) !important;
+        color: var(--cor-bege);
+    }
+
+    /* 2. CARD DA TABELA */
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media) !important;
+    }
+
+    /* 3. INPUT DE BUSCA */
+    .search-container .form-control {
+        background-color: rgba(255, 255, 255, 0.5);
+        border: 1px solid var(--cor-media);
+        color: var(--cor-escura) !important;
+    }
+
+    [data-theme="dark"] .search-container .form-control {
+        background-color: var(--cor-escura) !important;
         color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important; /* Força o preenchimento em navegadores modernos */
     }
 
-    /* 4. AJUSTE DO PLACEHOLDER (Texto de fundo) */
-    #inputBusca::placeholder {
-        color: #6c757d !important;
+    /* 4. TABELA - ONDE ESTAVA O ERRO */
+
+    /* TOPO DA TABELA (NOME, CNPJ, ETC) - Fica Azul Médio no modo claro */
+    .thead-planeja th {
+        color: var(--cor-media) !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
     }
 
-    [data-theme="dark"] #inputBusca::placeholder {
-        color: var(--cor-bege-planeja) !important;
-        opacity: 0.6;
+    /* DADOS DA TABELA (PLANEJA AI EVENTOS, ETC) - Volta a ser PRETO no modo claro */
+    .table tbody td {
+        color: #000000 !important;
     }
 
-    /* 5. SUGESTÕES (AUTOCOMPLETE) */
-    .ui-autocomplete {
-        background-color: #ffffff !important;
-        color: var(--cor-escura-planeja) !important;
-        border: 1px solid var(--cor-clara);
-        border-radius: 8px;
-        z-index: 1050;
+    /* AJUSTES PARA MODO ESCURO */
+    [data-theme="dark"] .thead-planeja th {
+        color: var(--cor-bege) !important;
     }
 
-    [data-theme="dark"] .ui-autocomplete {
-        background-color: var(--cor-escura-planeja) !important;
-        color: var(--cor-bege-planeja) !important;
-        border: 1px solid rgba(148, 180, 193, 0.3) !important;
+    [data-theme="dark"] .table tbody td {
+        color: #ffffff !important;
     }
 
-    .ui-menu-item-wrapper:hover {
-        background-color: rgba(148, 180, 193, 0.2) !important;
-        color: #94b4c1 !important;
+    .thead-planeja {
+        background-color: rgba(33, 52, 72, 0.05);
+    }
+
+    /* 5. BOTÕES */
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
     }
 </style>
 
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="m-0 fw-bold" style="color: #94b4c1;">Gestão de Empresas</h2>
-            <p class="text-muted m-0">Consulte e gerencie as empresas cadastradas</p>
+            <h2 class="m-0 fw-bold" style="color: var(--cor-media);">Gestão de Empresas</h2>
+            <p class="text-muted m-0">Administre os registros cadastrados</p>
         </div>
-
         <div class="d-flex gap-2">
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-info btn-sm px-3 shadow-sm" style="color: #94b4c1; border-color: #94b4c1;">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-house me-2"></i>Início
             </a>
-            <a asp-action="Manter" class="btn btn-success btn-sm px-3 shadow-sm">
+            <a asp-action="Manter" class="btn btn-planeja-primary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-plus me-2"></i>Nova Empresa
             </a>
         </div>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 search-container">
         <form asp-action="Cadastro" method="get" class="d-flex gap-2">
             <div class="input-group shadow-sm" style="max-width: 450px;">
-                <span class="input-group-text border-0" style="background-color: rgba(148, 180, 193, 0.1); color: #94b4c1;">
+                <span class="input-group-text border-0" style="background-color: var(--cor-media); color: white;">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-
-                <input type="text" id="inputBusca" name="busca" class="form-control border-0"
+                <input type="text" id="inputBusca" name="busca" class="form-control"
                        placeholder="Buscar por nome ou CNPJ..."
-                       value="@ViewData["FiltroAtual"]"
-                       style="background-color: rgba(148, 180, 193, 0.1);">
-
-                @if (ViewData["FiltroAtual"] != null)
-                {
-                    <a asp-action="Cadastro" class="btn border-0 d-flex align-items-center" style="background-color: rgba(148, 180, 193, 0.1); color: #dc3545;">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </a>
-                }
+                       value="@ViewData["FiltroAtual"]">
             </div>
-            <button type="submit" class="btn btn-info px-4 shadow-sm" style="background-color: #94b4c1; border: none; color: #1b262d; font-weight: bold;">
-                Pesquisar
-            </button>
+            <button type="submit" class="btn btn-planeja-primary px-4 shadow-sm">Pesquisar</button>
         </form>
     </div>
 
-    <div class="card shadow-sm border-0" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 180, 193, 0.2) !important;">
+    <div class="card-planeja shadow-sm">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" style="color: #e0e0e0;">
-                <thead style="background-color: rgba(148, 180, 193, 0.1);">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="thead-planeja">
                     <tr>
-                        <th class="ps-4 border-0" style="color: #94b4c1;">Nome</th>
-                        <th class="border-0" style="color: #94b4c1;">CNPJ</th>
-                        <th class="border-0" style="color: #94b4c1;">Telefone</th>
-                        <th class="text-center border-0" style="color: #94b4c1;">Status</th>
-                        <th class="text-end pe-4 border-0" style="color: #94b4c1;">Ações</th>
+                        <th class="ps-4 border-0">Nome</th>
+                        <th class="border-0">CNPJ</th>
+                        <th class="border-0">Telefone</th>
+                        <th class="text-center border-0">Status</th>
+                        <th class="text-end pe-4 border-0">Ações</th>
                     </tr>
                 </thead>
-                <tbody style="border-top: none;">
+                <tbody>
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted italic">Nenhuma empresa encontrada para o termo pesquisado.</td>
+                            <td colspan="5" class="text-center py-5 text-muted italic">Nenhuma empresa encontrada.</td>
                         </tr>
                     }
                     @foreach (var item in Model)
                     {
-                        <tr style="border-bottom: 1px solid rgba(148, 180, 193, 0.1);">
+                        <tr>
                             <td class="ps-4 fw-bold">@item.Nome</td>
                             <td>@item.Cnpj</td>
                             <td>@item.Telefone</td>
                             <td class="text-center">
-                                @if (item.Status == "Ativa")
-                                {
-                                    <span class="badge bg-success">Ativa</span>
-                                }
-                                else if (item.Status == "Inativa")
-                                {
-                                    <span class="badge bg-danger">Inativa</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">@item.Status</span>
-                                }
+                                <span class="badge @(item.Status == "Ativa" ? "bg-success" : "bg-danger")">@item.Status</span>
                             </td>
                             <td class="text-end pe-4">
-                                <a asp-action="Manter" asp-route-id="@item.Id" class="btn btn-sm text-info">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
+                                <a asp-action="Manter" asp-route-id="@item.Id" class="btn btn-sm text-info"><i class="fa-solid fa-pen"></i></a>
                                 <form asp-action="Deletar" asp-route-id="@item.Id" method="post" class="d-inline form-excluir">
                                     <button type="button" class="btn btn-sm text-danger btn-excluir" data-nome="@item.Nome">
                                         <i class="fa-solid fa-trash"></i>
@@ -154,46 +164,24 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
 <script>
     document.querySelectorAll('.btn-excluir').forEach(button => {
         button.addEventListener('click', function () {
             const form = this.closest('.form-excluir');
-            const nomeEmpresa = this.getAttribute('data-nome');
-            const isDarkMode = document.body.classList.contains('dark-mode') ||
-                               window.getComputedStyle(document.body).backgroundColor !== 'rgb(255, 255, 255)';
+            const nome = this.getAttribute('data-nome');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
             Swal.fire({
-                title: 'Excluir Empresa?',
-                html: `Tem certeza que deseja remover a empresa <b>"${nomeEmpresa}"</b>?<br><small>Esta ação não pode ser desfeita.</small>`,
+                title: 'Excluir?',
+                text: `Deseja remover a empresa ${nome}?`,
                 icon: 'warning',
-                iconColor: '#dc3545',
-                showCancelButton: true,
+                background: isDark ? '#213448' : '#ffffff',
+                color: isDark ? '#EAE0CF' : '#213448',
                 confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#94b4c1',
-                confirmButtonText: 'Sim, excluir!',
-                cancelButtonText: 'Cancelar',
-                background: isDarkMode ? '#1b262d' : '#ffffff',
-                color: isDarkMode ? '#ffffff' : '#212529',
-                customClass: { popup: 'border shadow-lg' }
-            }).then((result) => {
-                if (result.isConfirmed) { form.submit(); }
-            });
-        });
-    });
-
-    $(function() {
-        $("#inputBusca").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: '@Url.Action("GetSugestoes", "Empresa")',
-                    data: { termo: request.term },
-                    success: function(data) { response(data); }
-                });
-            },
-            minLength: 2
+                cancelButtonColor: '#547792',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => { if (result.isConfirmed) form.submit(); });
         });
     });
 </script>

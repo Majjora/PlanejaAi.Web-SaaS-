@@ -6,39 +6,40 @@
 
 <style>
     /* -----------------------------------------------------------
-               1. VARIAVEIS DE CORES - Paleta Planeja Aí
-               ----------------------------------------------------------- */
+                           1. VARIAVEIS DE CORES - Paleta Planeja Aí
+                           ----------------------------------------------------------- */
     :root {
         --p-clara: #94B4C1;
         --p-bege: #EAE0CF;
         --p-escura: #213448;
         --p-media: #547792;
-        --bg-body: #ffffff;
-        --bg-card: #fdfdfd;
+        /* Ajuste Versão Clara */
+        --bg-body: var(--p-bege); /* Fundo da página agora é Bege */
+        --bg-card: #ffffff; /* Cards em Branco para destaque */
         --text-main: var(--p-escura);
         --text-muted: var(--p-media);
         --accent: var(--p-media);
-        --border-card: var(--p-bege);
+        --border-card: var(--p-clara);
         --banner-grad: linear-gradient(135deg, var(--p-media), var(--p-clara));
-        --shadow-main: 0 4px 15px rgba(33, 52, 72, 0.05);
+        --shadow-main: 0 8px 24px rgba(33, 52, 72, 0.1);
     }
 
     [data-theme="dark"] {
         --bg-body: var(--p-escura);
-        --bg-card: rgba(33, 52, 72, 0.7);
+        --bg-card: var(--p-media); /* Cards em tom médio no dark */
         --text-main: var(--p-bege);
-        --text-muted: var(--p-clara);
-        --accent: var(--p-clara);
-        --border-card: rgba(148, 180, 193, 0.1);
-        --banner-grad: linear-gradient(135deg, #111e29, #000000);
+        --text-muted: var(--p-bege);
+        --accent: var(--p-bege);
+        --border-card: rgba(148, 180, 193, 0.2);
+        --banner-grad: linear-gradient(135deg, #111e29, #1a2a3a);
         --shadow-main: 0 10px 30px rgba(0,0,0,0.5);
     }
 
     /* -----------------------------------------------------------
-               2. ESTILOS DOS CARDS (O SEGREDO DO ESTILO)
-               ----------------------------------------------------------- */
+                           2. ESTILOS GERAIS E CARDS
+                           ----------------------------------------------------------- */
     body {
-        background-color: var(--bg-body);
+        background-color: var(--bg-body) !important;
         color: var(--text-main);
         transition: all 0.3s ease;
         font-family: 'Segoe UI', sans-serif;
@@ -56,11 +57,12 @@
         border-radius: 20px;
         margin-bottom: 40px;
         box-shadow: var(--shadow-main);
+        border: none;
     }
 
     .card-modulo {
         background-color: var(--bg-card);
-        border: 2px solid var(--border-card);
+        border: 1px solid var(--border-card);
         border-radius: 20px;
         padding: 2.5rem 1.5rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,13 +73,19 @@
         justify-content: center;
         align-items: center;
         cursor: pointer;
+        box-shadow: var(--shadow-main);
     }
 
         .card-modulo:hover {
             transform: translateY(-8px);
-            box-shadow: var(--shadow-main);
-            border-color: var(--accent);
+            border-color: var(--p-media);
+            background-color: #ffffff;
         }
+
+    [data-theme="dark"] .card-modulo:hover {
+        background-color: var(--p-media);
+        border-color: var(--p-bege);
+    }
 
     .icon-box {
         font-size: 2.5rem;
@@ -94,12 +102,14 @@
         font-weight: 700;
         font-size: 1.3rem;
         margin-bottom: 0.5rem;
+        color: var(--text-main);
     }
 
     .card-text {
         color: var(--text-muted);
         font-size: 0.95rem;
         margin-bottom: 0;
+        opacity: 0.8;
     }
 
     a {
@@ -121,9 +131,14 @@
         justify-content: center;
         font-size: 26px;
         cursor: pointer;
-        box-shadow: 0 8px 25px rgba(84, 119, 146, 0.3);
+        box-shadow: 0 8px 25px rgba(84, 119, 146, 0.4);
         z-index: 1000;
         transition: 0.3s;
+    }
+
+    [data-theme="dark"] .chatbot-fab {
+        background-color: var(--p-clara);
+        color: var(--p-escura);
     }
 
     .footer-politica {
@@ -133,6 +148,15 @@
         border-top: 1px solid var(--border-card);
         color: var(--text-muted);
         font-size: 0.85rem;
+    }
+
+        .footer-politica a {
+            color: var(--p-media) !important;
+            font-weight: 600;
+        }
+
+    [data-theme="dark"] .footer-politica a {
+        color: var(--p-bege) !important;
     }
 </style>
 
@@ -147,6 +171,7 @@
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
+        @* SEÇÕES COMUNS *@
         <div class="col">
             <a href="@Url.Action("Criar", "Eventos")">
                 <div class="card-modulo">
@@ -197,6 +222,7 @@
             </a>
         </div>
 
+        @* SEÇÃO EXCLUSIVA: OWNER *@
         @if (perfil == "owner")
         {
             <div class="col">
@@ -207,6 +233,30 @@
                         </div>
                         <h5 class="card-title">Nova Empresa</h5>
                         <p class="card-text">Configurações globais e acessos.</p>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @* SEÇÕES RESTRITAS: ADMIN E OWNER *@
+        @if (perfil == "admin" || perfil == "owner")
+        {
+            <div class="col">
+                <a href="@Url.Action("Index", "Usuarios")">
+                    <div class="card-modulo">
+                        <div class="icon-box"><i class="fa-solid fa-user-gear"></i></div>
+                        <h5 class="card-title">Cadastrar Usuário</h5>
+                        <p class="card-text">Gerencie a equipe e acessos.</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col">
+                <a href="@Url.Action("Index", "Logs")">
+                    <div class="card-modulo">
+                        <div class="icon-box"><i class="fa-solid fa-box-archive"></i></div>
+                        <h5 class="card-title">Logs</h5>
+                        <p class="card-text">Histórico de ações no sistema.</p>
                     </div>
                 </a>
             </div>
@@ -224,7 +274,7 @@
     </div>
 
     <div class="footer-politica">
-        <p>&copy; 2024 PlanejaAi - Soluções Integradas</p>
+        <p>&copy; 2026 PlanejaAi - Soluções Integradas</p>
         <a href="#">Políticas de Privacidade</a> |
         <a href="#">Termos de Uso</a>
     </div>

@@ -13,15 +13,15 @@
             --cor-media: #547792;
             --cor-clara: #94B4C1;
             --cor-bege: #EAE0CF;
-            --bg-fundo: #ffffff; /* Ajustado para o branco premium que combinamos */
+            --bg-fundo: #ffffff;
             --texto-principal: var(--cor-escura);
-            --bg-navbar: #ffffff;
+            --bg-navbar: rgba(255, 255, 255, 0.9); /* Leve transparência */
         }
 
         [data-theme="dark"] {
             --bg-fundo: var(--cor-escura);
             --texto-principal: var(--cor-bege);
-            --bg-navbar: rgba(33, 52, 72, 0.95);
+            --bg-navbar: rgba(33, 52, 72, 0.9); /* Leve transparência */
         }
 
         body {
@@ -29,9 +29,11 @@
             color: var(--texto-principal);
             transition: background-color 0.3s ease;
             margin: 0;
+            /* Evita saltos de layout */
+            min-height: 100vh;
         }
 
-        /* Navbar Superior */
+        /* Navbar Superior Fixa */
         .custom-navbar {
             background-color: var(--bg-navbar);
             padding: 10px 30px;
@@ -39,9 +41,21 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
+            /* O SEGREDO PARA FIXAR */
+            position: fixed; /* Mudamos de sticky para fixed para maior estabilidade */
             top: 0;
-            z-index: 1000;
+            left: 0;
+            right: 0;
+            z-index: 1050; /* Garante que fique acima de tudo */
+            /* Efeito Moderno de Vidro */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: background-color 0.3s ease, padding 0.3s ease;
+        }
+
+        /* Espaçamento para o conteúdo não sumir debaixo da navbar fixa */
+        main {
+            padding-top: 80px; /* Altura aproximada da sua navbar */
         }
 
         /* Logos */
@@ -62,13 +76,12 @@
             display: block;
         }
 
-        /* Ícones Sol/Lua (SVG) */
+        /* Botão de Tema */
         .theme-toggle-btn {
             background: transparent;
             border: none;
             cursor: pointer;
             outline: none !important;
-            box-shadow: none !important;
             padding: 5px;
             display: flex;
             align-items: center;
@@ -83,7 +96,6 @@
             display: none;
         }
 
-        /* Lógica de exibição dos ícones baseada no data-theme */
         html:not([data-theme="dark"]) .icon-sun {
             display: block;
             fill: var(--cor-escura);
@@ -98,30 +110,22 @@
             color: var(--texto-principal);
             font-size: 1.2rem;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+
+            .nav-icon:hover {
+                transform: rotate(45deg); /* Efeito legal na engrenagem */
+            }
 
         .profile-img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             border: 2px solid var(--cor-media);
+            object-fit: cover;
         }
 
-        /* Botões Customizados */
-        .btn-planeja {
-            background-color: var(--cor-media);
-            color: white;
-            border: none;
-            transition: all 0.3s;
-        }
-
-            .btn-planeja:hover {
-                background-color: var(--cor-escura);
-                color: var(--cor-bege);
-                transform: translateY(-1px);
-            }
-
-        /* Estilo para Tabelas */
+        /* Ajustes de Tabelas e Forms (Mantidos conforme seu código) */
         .table {
             color: var(--texto-principal) !important;
         }
@@ -131,22 +135,10 @@
             color: var(--cor-bege);
         }
 
-        /* Ajuste de Inputs e Selects */
         .form-control, .form-select {
             background-color: transparent;
             border: 1px solid var(--cor-media);
             color: var(--texto-principal);
-        }
-
-        [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
-            color: var(--cor-bege);
-        }
-
-        .form-control:focus, .form-select:focus {
-            background-color: transparent;
-            color: var(--texto-principal);
-            border-color: var(--cor-clara);
-            box-shadow: 0 0 0 0.25rem rgba(148, 180, 193, 0.25);
         }
     </style>
 </head>
@@ -173,22 +165,20 @@
     </header>
 
     <main role="main">
-        @RenderBody()
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
     </main>
 
     <script>
-        // Use exatamente o ID do botão HTML
         const themeToggle = document.getElementById('themeToggle');
         const htmlElement = document.documentElement;
 
         function applyTheme(theme) {
             htmlElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
-            // Como usamos CSS para esconder/mostrar os SVGs,
-            // não precisamos mais de lógica de troca de ícone aqui!
         }
 
-        // Recupera o tema salvo no localStorage antes de mostrar a página
         const savedTheme = localStorage.getItem('theme') || 'light';
         applyTheme(savedTheme);
 
