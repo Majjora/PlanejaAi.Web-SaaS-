@@ -1,0 +1,199 @@
+﻿@model IEnumerable<PlanejaAi.Models.Empresa>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+<style>
+    /* 1. CORES BASEADAS NA SUA PALETA */
+    :root {
+        --cor-escura-planeja: #213448;
+        --cor-bege-planeja: #EAE0CF;
+    }
+
+    /* 2. TEXTO DIGITADO - MODO CLARO (PADRÃO) */
+    #inputBusca {
+        color: var(--cor-escura-planeja) !important;
+        -webkit-text-fill-color: var(--cor-escura-planeja) !important;
+    }
+
+    /* 3. TEXTO DIGITADO - MODO ESCURO (FORÇAR BRANCO/BEGE) */
+    /* Aqui está o segredo: o seletor agora olha para o [data-theme="dark"] que está no seu Layout */
+    [data-theme="dark"] #inputBusca,
+    [data-theme="dark"] .input-group #inputBusca {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important; /* Força o preenchimento em navegadores modernos */
+    }
+
+    /* 4. AJUSTE DO PLACEHOLDER (Texto de fundo) */
+    #inputBusca::placeholder {
+        color: #6c757d !important;
+    }
+
+    [data-theme="dark"] #inputBusca::placeholder {
+        color: var(--cor-bege-planeja) !important;
+        opacity: 0.6;
+    }
+
+    /* 5. SUGESTÕES (AUTOCOMPLETE) */
+    .ui-autocomplete {
+        background-color: #ffffff !important;
+        color: var(--cor-escura-planeja) !important;
+        border: 1px solid var(--cor-clara);
+        border-radius: 8px;
+        z-index: 1050;
+    }
+
+    [data-theme="dark"] .ui-autocomplete {
+        background-color: var(--cor-escura-planeja) !important;
+        color: var(--cor-bege-planeja) !important;
+        border: 1px solid rgba(148, 180, 193, 0.3) !important;
+    }
+
+    .ui-menu-item-wrapper:hover {
+        background-color: rgba(148, 180, 193, 0.2) !important;
+        color: #94b4c1 !important;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="m-0 fw-bold" style="color: #94b4c1;">Gestão de Empresas</h2>
+            <p class="text-muted m-0">Consulte e gerencie as empresas cadastradas</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-info btn-sm px-3 shadow-sm" style="color: #94b4c1; border-color: #94b4c1;">
+                <i class="fa-solid fa-house me-2"></i>Início
+            </a>
+            <a asp-action="Manter" class="btn btn-success btn-sm px-3 shadow-sm">
+                <i class="fa-solid fa-plus me-2"></i>Nova Empresa
+            </a>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <form asp-action="Cadastro" method="get" class="d-flex gap-2">
+            <div class="input-group shadow-sm" style="max-width: 450px;">
+                <span class="input-group-text border-0" style="background-color: rgba(148, 180, 193, 0.1); color: #94b4c1;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+
+                <input type="text" id="inputBusca" name="busca" class="form-control border-0"
+                       placeholder="Buscar por nome ou CNPJ..."
+                       value="@ViewData["FiltroAtual"]"
+                       style="background-color: rgba(148, 180, 193, 0.1);">
+
+                @if (ViewData["FiltroAtual"] != null)
+                {
+                    <a asp-action="Cadastro" class="btn border-0 d-flex align-items-center" style="background-color: rgba(148, 180, 193, 0.1); color: #dc3545;">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </a>
+                }
+            </div>
+            <button type="submit" class="btn btn-info px-4 shadow-sm" style="background-color: #94b4c1; border: none; color: #1b262d; font-weight: bold;">
+                Pesquisar
+            </button>
+        </form>
+    </div>
+
+    <div class="card shadow-sm border-0" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 180, 193, 0.2) !important;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="color: #e0e0e0;">
+                <thead style="background-color: rgba(148, 180, 193, 0.1);">
+                    <tr>
+                        <th class="ps-4 border-0" style="color: #94b4c1;">Nome</th>
+                        <th class="border-0" style="color: #94b4c1;">CNPJ</th>
+                        <th class="border-0" style="color: #94b4c1;">Telefone</th>
+                        <th class="text-center border-0" style="color: #94b4c1;">Status</th>
+                        <th class="text-end pe-4 border-0" style="color: #94b4c1;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: none;">
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted italic">Nenhuma empresa encontrada para o termo pesquisado.</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr style="border-bottom: 1px solid rgba(148, 180, 193, 0.1);">
+                            <td class="ps-4 fw-bold">@item.Nome</td>
+                            <td>@item.Cnpj</td>
+                            <td>@item.Telefone</td>
+                            <td class="text-center">
+                                @if (item.Status == "Ativa")
+                                {
+                                    <span class="badge bg-success">Ativa</span>
+                                }
+                                else if (item.Status == "Inativa")
+                                {
+                                    <span class="badge bg-danger">Inativa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">@item.Status</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Manter" asp-route-id="@item.Id" class="btn btn-sm text-info">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <form asp-action="Deletar" asp-route-id="@item.Id" method="post" class="d-inline form-excluir">
+                                    <button type="button" class="btn btn-sm text-danger btn-excluir" data-nome="@item.Nome">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+<script>
+    document.querySelectorAll('.btn-excluir').forEach(button => {
+        button.addEventListener('click', function () {
+            const form = this.closest('.form-excluir');
+            const nomeEmpresa = this.getAttribute('data-nome');
+            const isDarkMode = document.body.classList.contains('dark-mode') ||
+                               window.getComputedStyle(document.body).backgroundColor !== 'rgb(255, 255, 255)';
+
+            Swal.fire({
+                title: 'Excluir Empresa?',
+                html: `Tem certeza que deseja remover a empresa <b>"${nomeEmpresa}"</b>?<br><small>Esta ação não pode ser desfeita.</small>`,
+                icon: 'warning',
+                iconColor: '#dc3545',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#94b4c1',
+                confirmButtonText: 'Sim, excluir!',
+                cancelButtonText: 'Cancelar',
+                background: isDarkMode ? '#1b262d' : '#ffffff',
+                color: isDarkMode ? '#ffffff' : '#212529',
+                customClass: { popup: 'border shadow-lg' }
+            }).then((result) => {
+                if (result.isConfirmed) { form.submit(); }
+            });
+        });
+    });
+
+    $(function() {
+        $("#inputBusca").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: '@Url.Action("GetSugestoes", "Empresa")',
+                    data: { termo: request.term },
+                    success: function(data) { response(data); }
+                });
+            },
+            minLength: 2
+        });
+    });
+</script>

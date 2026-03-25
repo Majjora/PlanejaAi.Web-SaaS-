@@ -1,0 +1,190 @@
+﻿@model PlanejaAi.Models.Empresa
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Nova Empresa" : "Editar Empresa";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm p-4" style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 180, 193, 0.2) !important;">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="m-0 fw-bold" style="color: #94b4c1;">@ViewData["Title"]</h2>
+        </div>
+
+        @if (ViewBag.Erro != null)
+        {
+            <div class="alert alert-danger bg-danger text-white border-0">@ViewBag.Erro</div>
+        }
+
+        <form asp-action="Manter" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="row g-3">
+                @* --- DADOS PRINCIPAIS --- *@
+                <div class="col-md-6">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Nome da Empresa*</label>
+                    <input asp-for="Nome" class="form-control border-secondary text-dark" style="background-color: #fff;" placeholder="Ex: Planeja Ai LTDA" required />
+                    <div class="invalid-feedback">O nome da empresa é obrigatório.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">CNPJ*</label>
+                    <input asp-for="Cnpj" class="form-control border-secondary text-dark" style="background-color: #fff;" maxlength="14" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" autocomplete="off" />
+                    <div class="invalid-feedback">Informe um CNPJ válido.</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">E-mail*</label>
+                    <input asp-for="Email" type="email" class="form-control border-secondary text-dark" style="background-color: #fff;" required autocomplete="off" />
+                    <div class="invalid-feedback">Informe um e-mail válido.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Telefone*</label>
+                    <input asp-for="Telefone" class="form-control border-secondary text-dark" style="background-color: #fff;" maxlength="11" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                    <div class="invalid-feedback">O telefone é obrigatório.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Status*</label>
+                    <select asp-for="Status" class="form-select border-secondary text-dark" style="background-color: #fff;" required>
+                        <option value="Ativa">Ativa</option>
+                        <option value="Inativa">Inativa</option>
+                        <option value="Suspensa">Suspensa</option>
+                    </select>
+                    <div class="invalid-feedback">Selecione um status.</div>
+                </div>
+
+                <h5 class="mt-4 text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px; color: #94b4c1;">Endereço</h5>
+                <hr style="color: #94b4c1; opacity: 0.3;" class="mt-0" />
+
+                @* --- ENDEREÇO --- *@
+                <div class="col-md-3">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">CEP*</label>
+                    <input asp-for="Cep" id="cep" class="form-control border-secondary text-dark" style="background-color: #fff;" maxlength="8" required onblur="buscarCep(this.value)" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                    <div class="invalid-feedback">CEP obrigatório.</div>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Logradouro*</label>
+                    <input asp-for="Endereco" id="logradouro" class="form-control border-secondary text-dark" style="background-color: #fff;" required />
+                    <div class="invalid-feedback">O endereço é obrigatório.</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Nº*</label>
+                    @* Bloqueio de letras via JS no oninput *@
+                    <input asp-for="Numero" id="numero" class="form-control border-secondary text-dark" style="background-color: #fff;" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                    <div class="invalid-feedback">Apenas números.</div>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Bairro*</label>
+                    <input asp-for="Bairro" id="bairro" class="form-control border-secondary text-dark" style="background-color: #fff;" required />
+                    <div class="invalid-feedback">O bairro é obrigatório.</div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">Cidade*</label>
+                    <input asp-for="Cidade" id="cidade" class="form-control border-secondary text-dark" style="background-color: #fff;" required />
+                    <div class="invalid-feedback">A cidade é obrigatória.</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold" style="color: #94b4c1;">UF*</label>
+                    <select asp-for="Estado" id="uf" class="form-select border-secondary text-dark" style="background-color: #fff;" required>
+                        <option value="">--</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                    <div class="invalid-feedback">Selecione a UF.</div>
+                </div>
+            </div>
+
+            <div class="mt-5 d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4 py-2 shadow-sm fw-bold">
+                    <i class="fa-solid fa-save me-2"></i>Salvar Empresa
+                </button>
+                <a asp-action="Cadastro" class="btn btn-outline-secondary px-4 py-2 fw-bold" style="color: #94b4c1; border-color: #94b4c1;">
+                    <i class="fa-solid fa-xmark me-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Validação Visual do Bootstrap
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+
+    // Busca CEP (API ViaCEP)
+        function buscarCep(valor) {
+        var cep = valor.replace(/\D/g, '');
+        if (cep != "" && cep.length === 8) {
+
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(dados => {
+                    if (!("erro" in dados)) {
+                        document.getElementById('logradouro').value = dados.logradouro;
+                        document.getElementById('bairro').value = dados.bairro;
+                        document.getElementById('cidade').value = dados.localidade;
+                        document.getElementById('uf').value = dados.uf;
+                        document.getElementById('numero').focus();
+                    } else {
+                        // ALERTA BONITO DE ERRO
+                        limparEndereco();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'CEP não encontrado',
+                            text: 'O CEP informado não existe na base dos Correios.',
+                            background: '#1b262d',
+                            color: '#fff',
+                            confirmButtonColor: '#94b4c1'
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Erro de Conexão',
+                        text: 'Não foi possível buscar o CEP agora.',
+                        background: '#1b262d',
+                        color: '#fff',
+                        confirmButtonColor: '#94b4c1'
+                    });
+                });
+        }
+    }
+</script>

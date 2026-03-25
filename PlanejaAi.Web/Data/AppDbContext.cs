@@ -14,5 +14,10 @@ namespace PlanejaAi.Data
 
         // A tabela Eventos que você já tinha criado
         public DbSet<Evento> Eventos { get; set; }
+
+        public DbSet<Empresa> Empresas { get; set; }
+
+        public DbSet<Log> Logs { get; set; }
+
     }
 }

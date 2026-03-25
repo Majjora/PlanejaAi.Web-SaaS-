@@ -106,6 +106,48 @@
             border-radius: 50%;
             border: 2px solid var(--cor-media);
         }
+
+        /* Botões Customizados */
+        .btn-planeja {
+            background-color: var(--cor-media);
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+
+            .btn-planeja:hover {
+                background-color: var(--cor-escura);
+                color: var(--cor-bege);
+                transform: translateY(-1px);
+            }
+
+        /* Estilo para Tabelas */
+        .table {
+            color: var(--texto-principal) !important;
+        }
+
+        .thead-planeja {
+            background-color: var(--cor-escura);
+            color: var(--cor-bege);
+        }
+
+        /* Ajuste de Inputs e Selects */
+        .form-control, .form-select {
+            background-color: transparent;
+            border: 1px solid var(--cor-media);
+            color: var(--texto-principal);
+        }
+
+        [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
+            color: var(--cor-bege);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: transparent;
+            color: var(--texto-principal);
+            border-color: var(--cor-clara);
+            box-shadow: 0 0 0 0.25rem rgba(148, 180, 193, 0.25);
+        }
     </style>
 </head>
 <body>
