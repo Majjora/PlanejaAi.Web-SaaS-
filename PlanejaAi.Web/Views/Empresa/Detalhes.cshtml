@@ -1,0 +1,251 @@
+﻿@model PlanejaAi.Models.Empresa
+
+@{
+    ViewData["Title"] = "Detalhes da Empresa";
+}
+
+<style>
+    :root {
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
+    }
+
+    
+    body {
+        background-color: var(--cor-bege) !important;
+        color: var(--cor-escura);
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura) !important;
+        color: var(--cor-bege);
+    }
+
+    
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        padding: 30px;
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    
+    .form-label {
+        color: var(--cor-media);
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+    }
+
+    [data-theme="dark"] .form-label {
+        color: var(--cor-bege);
+    }
+
+    .info-box {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid var(--cor-clara);
+        color: var(--cor-escura);
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+    }
+
+    [data-theme="dark"] .info-box {
+        background-color: var(--cor-escura);
+        border-color: var(--cor-clara);
+        color: #ffffff;
+    }
+
+    
+    .main-title {
+        color: var(--cor-media);
+        transition: color 0.3s ease;
+    }
+
+    [data-theme="dark"] .main-title {
+        color: var(--cor-bege) !important;
+    }
+
+    .section-title {
+        color: var(--cor-media);
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        margin-top: 2rem;
+        transition: color 0.3s ease;
+    }
+
+    [data-theme="dark"] .section-title {
+        color: var(--cor-bege) !important;
+    }
+
+    [data-theme="dark"] hr {
+        border-color: var(--cor-bege);
+        opacity: 0.2;
+    }
+
+   
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+    .btn-planeja-outline {
+        border: 2px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: bold;
+        background-color: transparent;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border-color: var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+    
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+        transition: all 0.3s ease; 
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+    
+    .btn-planeja-primary:hover {
+        background-color: var(--cor-escura);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary:hover {
+        background-color: #ffffff;
+        color: var(--cor-escura);
+    }
+
+    
+    .btn-planeja-outline {
+        border: 1px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: 500;
+        background-color: transparent;
+        transition: all 0.3s ease; 
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border: 1px solid var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+    
+    .btn-planeja-outline:hover {
+        background-color: var(--cor-media);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+        background-color: var(--cor-bege);
+        color: var(--cor-escura);
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="card-planeja shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="m-0 fw-bold main-title">
+                <i class="fa-solid fa-building me-2"></i> @ViewData["Title"]
+            </h2>
+        </div>
+
+        <div class="row g-3">
+            
+            <div class="col-md-6">
+                <label class="form-label">Nome da Empresa</label>
+                <div class="info-box">@Model.Nome</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">CNPJ</label>
+                <div class="info-box">@Model.Cnpj</div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">E-mail</label>
+                <div class="info-box">@Model.Email</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Telefone</label>
+                <div class="info-box">@Model.Telefone</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <div class="info-box">
+                    <span class="badge @(Model.Status == "Ativa" ? "bg-success" : (Model.Status == "Inativa" ? "bg-danger" : "bg-warning"))">
+                        @Model.Status
+                    </span>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <h5 class="section-title text-uppercase fw-bold">Endereço</h5>
+                <hr style="opacity: 0.1;" class="mt-1" />
+            </div>
+
+            
+            <div class="col-md-3">
+                <label class="form-label">CEP</label>
+                <div class="info-box">@Model.Cep</div>
+            </div>
+            <div class="col-md-7">
+                <label class="form-label">Logradouro</label>
+                <div class="info-box">@Model.Endereco</div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Nº</label>
+                <div class="info-box">@Model.Numero</div>
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label">Bairro</label>
+                <div class="info-box">@Model.Bairro</div>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Cidade</label>
+                <div class="info-box">@Model.Cidade</div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">UF</label>
+                <div class="info-box">@Model.Estado</div>
+            </div>
+        </div>
+
+        <div class="mt-5 d-flex gap-2">
+            <a asp-action="Cadastro" class="btn btn-planeja-outline px-4 py-2">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar
+            </a>
+            <a asp-action="Manter" asp-route-id="@Model.Id" class="btn btn-planeja-primary px-5 py-2 shadow-sm">
+                <i class="fa-solid fa-pen me-2"></i> Editar Empresa
+            </a>
+        </div>
+    </div>
+</div>

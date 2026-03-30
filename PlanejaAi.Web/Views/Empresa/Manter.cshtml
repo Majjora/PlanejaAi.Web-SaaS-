@@ -14,7 +14,7 @@
         --cor-bege: #EAE0CF;
     }
 
-    /* 1. FUNDO DA PÁGINA */
+    
     body {
         background-color: var(--cor-bege) !important;
         color: var(--cor-escura);
@@ -26,7 +26,7 @@
         color: var(--cor-bege);
     }
 
-    /* 2. CARD DO FORMULÁRIO */
+    
     .card-planeja {
         background-color: #ffffff;
         border-radius: 12px;
@@ -41,7 +41,7 @@
         box-shadow: 0 8px 24px rgba(0,0,0,0.3);
     }
 
-    /* 3. INPUTS E LABELS */
+    
     .form-label {
         color: var(--cor-media);
         font-weight: 700;
@@ -65,14 +65,14 @@
         border-color: var(--cor-clara);
     }
 
-    /* 4. DIVISORES E TÍTULOS */
+    
     .main-title {
         color: var(--cor-media);
         transition: color 0.3s ease;
     }
 
     [data-theme="dark"] .main-title {
-        color: var(--cor-bege) !important; /* Corrigido: Título principal visível no Dark */
+        color: var(--cor-bege) !important; 
     }
 
     .section-title {
@@ -84,7 +84,7 @@
     }
 
     [data-theme="dark"] .section-title {
-        color: var(--cor-bege) !important; /* Título da seção Endereço visível no Dark */
+        color: var(--cor-bege) !important; 
     }
 
     [data-theme="dark"] hr {
@@ -92,7 +92,7 @@
         opacity: 0.2;
     }
 
-    /* 5. BOTÕES */
+    
     .btn-planeja-primary {
         background-color: var(--cor-media);
         color: white;
@@ -115,6 +115,33 @@
         border-color: var(--cor-bege);
         color: var(--cor-bege);
     }
+
+    
+    .btn-planeja-primary, .btn-planeja-outline {
+        transition: all 0.3s ease;
+    }
+
+        
+        .btn-planeja-primary:hover {
+            background-color: var(--cor-escura); 
+            color: white;
+        }
+
+        .btn-planeja-outline:hover {
+            background-color: var(--cor-media); 
+            color: white;
+        }
+
+    
+    [data-theme="dark"] .btn-planeja-primary:hover {
+        background-color: #ffffff; 
+        color: var(--cor-escura);
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+        background-color: var(--cor-bege); 
+        color: var(--cor-escura);
+    }
 </style>
 
 <div class="container mt-5 mb-5">
@@ -133,7 +160,7 @@
             <input type="hidden" asp-for="Id" />
 
             <div class="row g-3">
-                @* --- DADOS PRINCIPAIS --- *@
+                
                 <div class="col-md-6">
                     <label class="form-label">Nome da Empresa*</label>
                     <input asp-for="Nome" class="form-control" placeholder="Ex: Planeja Ai LTDA" required />
@@ -141,7 +168,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">CNPJ*</label>
-                    <input asp-for="Cnpj" class="form-control" maxlength="14" required
+                    <input asp-for="Cnpj" id="cnpj" class="form-control" maxlength="14" required
+                           onblur="buscarCnpj(this.value)"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" autocomplete="off" />
                     <div class="invalid-feedback">Informe um CNPJ válido (apenas números).</div>
                 </div>
@@ -171,7 +199,7 @@
                     <hr style="opacity: 0.1;" class="mt-1" />
                 </div>
 
-                @* --- ENDEREÇO --- *@
+                
                 <div class="col-md-3">
                     <label class="form-label">CEP*</label>
                     <input asp-for="Cep" id="cep" class="form-control" maxlength="8" required
@@ -282,4 +310,58 @@
                 });
         }
     }
+
+            function buscarCnpj(valor) {
+        
+        var cnpj = valor.replace(/\D/g, '');
+
+        
+        if (cnpj !== "" && cnpj.length === 14) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+            fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('CNPJ não encontrado');
+                    }
+                    return response.json();
+                })
+                .then(dados => {
+                    
+                    if (document.getElementById('Nome')) {
+                        document.getElementById('Nome').value = dados.razao_social || '';
+                    }
+
+                    
+                    if (document.getElementById('Email') && dados.email) {
+                        document.getElementById('Email').value = dados.email;
+                    }
+
+                    
+                    if (document.getElementById('Telefone') && dados.ddd_telefone_1) {
+                        document.getElementById('Telefone').value = dados.ddd_telefone_1.replace(/\D/g, '');
+                    }
+
+                    
+                    if (dados.cep && document.getElementById('cep')) {
+                        document.getElementById('cep').value = dados.cep;
+                        buscarCep(dados.cep);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'CNPJ inválido ou não encontrado',
+                        text: 'Verifique o número e tente novamente.',
+                        background: isDark ? '#213448' : '#ffffff',
+                        color: isDark ? '#EAE0CF' : '#213448',
+                        confirmButtonColor: '#547792'
+                    });
+                });
+        }
+    }
+
+
+
 </script>
+

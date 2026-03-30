@@ -5,17 +5,15 @@
 }
 
 <style>
-    /* -----------------------------------------------------------
-                           1. VARIAVEIS DE CORES - Paleta Planeja Aí
-                           ----------------------------------------------------------- */
+    
     :root {
         --p-clara: #94B4C1;
         --p-bege: #EAE0CF;
         --p-escura: #213448;
         --p-media: #547792;
-        /* Ajuste Versão Clara */
-        --bg-body: var(--p-bege); /* Fundo da página agora é Bege */
-        --bg-card: #ffffff; /* Cards em Branco para destaque */
+        
+        --bg-body: var(--p-bege); 
+        --bg-card: #ffffff; 
         --text-main: var(--p-escura);
         --text-muted: var(--p-media);
         --accent: var(--p-media);
@@ -26,7 +24,7 @@
 
     [data-theme="dark"] {
         --bg-body: var(--p-escura);
-        --bg-card: var(--p-media); /* Cards em tom médio no dark */
+        --bg-card: var(--p-media); 
         --text-main: var(--p-bege);
         --text-muted: var(--p-bege);
         --accent: var(--p-bege);
@@ -35,9 +33,7 @@
         --shadow-main: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    /* -----------------------------------------------------------
-                           2. ESTILOS GERAIS E CARDS
-                           ----------------------------------------------------------- */
+   
     body {
         background-color: var(--bg-body) !important;
         color: var(--text-main);
@@ -171,7 +167,7 @@
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
-        @* SEÇÕES COMUNS *@
+        
         <div class="col">
             <a href="@Url.Action("Criar", "Eventos")">
                 <div class="card-modulo">
@@ -222,7 +218,7 @@
             </a>
         </div>
 
-        @* SEÇÃO EXCLUSIVA: OWNER *@
+        
         @if (perfil == "owner")
         {
             <div class="col">
@@ -238,7 +234,7 @@
             </div>
         }
 
-        @* SEÇÕES RESTRITAS: ADMIN E OWNER *@
+      
         @if (perfil == "admin" || perfil == "owner")
         {
             <div class="col">

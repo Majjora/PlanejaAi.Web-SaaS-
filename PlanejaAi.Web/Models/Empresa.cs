@@ -14,7 +14,7 @@ namespace PlanejaAi.Models
         public string Nome { get; set; }
 
         [Column("emp_email")]
-        public string? Email { get; set; } // O '?' evita o erro de DBNull
+        public string? Email { get; set; } 
 
         [Column("emp_telefone")]
         public string? Telefone { get; set; }

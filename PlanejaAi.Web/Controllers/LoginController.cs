@@ -9,8 +9,8 @@ using System.Net;
 using System.Net.Mail;
 using System;
 using System.Linq;
-using PlanejaAi.Data; // Adicionado para o Contexto
-using PlanejaAi.Models; // Adicionado para a classe Log
+using PlanejaAi.Data;
+using PlanejaAi.Models;
 
 namespace PlanejaAi.Controllers
 {
@@ -18,9 +18,8 @@ namespace PlanejaAi.Controllers
     public class LoginController : Controller
     {
         private readonly string stringConexao = "Server=localhost;Database=planeja_ai;User=root;Password=felps123;";
-        private readonly AppDbContext _context; // Adicionado Contexto
+        private readonly AppDbContext _context;
 
-        // Construtor atualizado para receber o banco via Injeção de Dependência
         public LoginController(AppDbContext context)
         {
             _context = context;
@@ -37,41 +36,86 @@ namespace PlanejaAi.Controllers
             using (MySqlConnection conexao = new MySqlConnection(stringConexao))
             {
                 await conexao.OpenAsync();
-                string sql = "SELECT f.func_id, f.func_nome, l.perfil_acesso, l.emp_id FROM login l INNER JOIN funcionarios f ON l.func_id = f.func_id WHERE l.login_email = @email AND l.login_senha = @senha";
+
+
+                string sql = "SELECT f.func_id, f.func_nome, l.perfil_acesso, l.emp_id, l.login_senha, l.login_senha_atualizacao FROM login l INNER JOIN funcionarios f ON l.func_id = f.func_id WHERE l.login_email = @email";
 
                 using (MySqlCommand comando = new MySqlCommand(sql, conexao))
                 {
                     comando.Parameters.AddWithValue("@email", email);
-                    comando.Parameters.AddWithValue("@senha", senha);
 
                     using (MySqlDataReader leitor = await comando.ExecuteReaderAsync())
                     {
                         if (await leitor.ReadAsync())
                         {
-                            string nomeFuncionario = leitor.GetString("func_nome");
-                            string perfilAcesso = leitor.GetString("perfil_acesso");
-                            string empresaId = leitor["emp_id"].ToString();
-                            string funcId = leitor["func_id"].ToString();
+                            string hashSalvoNoBanco = leitor.GetString("login_senha");
+                            bool senhaCorreta = false;
 
-                            var claims = new List<Claim> {
-                                new Claim(ClaimTypes.NameIdentifier, funcId),
-                                new Claim(ClaimTypes.Name, nomeFuncionario),
-                                new Claim("Nome", nomeFuncionario),
-                                new Claim(ClaimTypes.Role, perfilAcesso),
-                                new Claim("EmpresaId", empresaId)
-                            };
+                            try { senhaCorreta = BCrypt.Net.BCrypt.Verify(senha, hashSalvoNoBanco); }
+                            catch { senhaCorreta = false; }
 
-                            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+                            if (senhaCorreta)
+                            {
+                                string nomeFuncionario = leitor.GetString("func_nome");
+                                string perfilAcesso = leitor.GetString("perfil_acesso");
+                                string empresaId = leitor["emp_id"].ToString();
+                                string funcId = leitor["func_id"].ToString();
 
-                            // Chamada do novo método de log elegante
-                            await SalvarLog("LOGIN", "login", "Acesso realizado com sucesso", int.Parse(empresaId), nomeFuncionario, ipAtual);
+                                
+                                DateTime? dataAtualizacao = leitor.IsDBNull(leitor.GetOrdinal("login_senha_atualizacao"))
+                                    ? (DateTime?)null
+                                    : leitor.GetDateTime("login_senha_atualizacao");
 
-                            return RedirectToAction("Index", "Home");
+                                if (dataAtualizacao == null || dataAtualizacao.Value.AddDays(30) < DateTime.Now)
+                                {
+                                    leitor.Close(); 
+                                    string novoToken = Guid.NewGuid().ToString();
+                                    string sqlToken = "UPDATE login SET login_token = @token, login_token_expiracao = @expiracao WHERE login_email = @email";
+
+                                    using (MySqlCommand cmdT = new MySqlCommand(sqlToken, conexao))
+                                    {
+                                        cmdT.Parameters.AddWithValue("@token", novoToken);
+                                        cmdT.Parameters.AddWithValue("@expiracao", DateTime.Now.AddMinutes(10));
+                                        cmdT.Parameters.AddWithValue("@email", email);
+                                        await cmdT.ExecuteNonQueryAsync();
+                                    }
+
+                                   
+                                    if (dataAtualizacao == null)
+                                    {
+                                        TempData["AvisoNovaSenha"] = "Este é o seu primeiro acesso. Por favor, crie uma senha definitiva por segurança.";
+                                    }
+                                    else
+                                    {
+                                        TempData["AvisoNovaSenha"] = "Sua senha expirou por segurança (mais de 30 dias). Por favor, crie uma nova senha.";
+                                    }
+
+                                    return RedirectToAction("NovaSenha", new { token = novoToken });
+                                }
+
+                                var claims = new List<Claim> {
+                                    new Claim(ClaimTypes.NameIdentifier, funcId),
+                                    new Claim(ClaimTypes.Name, nomeFuncionario),
+                                    new Claim("Nome", nomeFuncionario),
+                                    new Claim(ClaimTypes.Role, perfilAcesso),
+                                    new Claim("EmpresaId", empresaId)
+                                };
+
+                                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+
+                                await SalvarLog("LOGIN", "login", "Acesso realizado com sucesso", int.Parse(empresaId), nomeFuncionario, ipAtual);
+
+                                return RedirectToAction("Index", "Home");
+                            }
+                            else
+                            {
+                                await SalvarLog("LOGIN_FALHA", "login", "Tentativa de acesso negada: senha incorreta", 0, email, ipAtual);
+                            }
                         }
                         else
                         {
-                            await SalvarLog("LOGIN_FALHA", "login", "Tentativa de acesso negada: senha incorreta", 0, email, ipAtual);
+                            await SalvarLog("LOGIN_FALHA", "login", "Tentativa de acesso negada: usuário não encontrado", 0, email, ipAtual);
                         }
                     }
                 }
@@ -105,10 +149,12 @@ namespace PlanejaAi.Controllers
                             string nomeUsuario = leitor.GetString("func_nome");
                             leitor.Close();
 
-                            string sqlToken = "UPDATE login SET login_token = @token WHERE login_email = @email";
+                            
+                            string sqlToken = "UPDATE login SET login_token = @token, login_token_expiracao = @expiracao WHERE login_email = @email";
                             using (MySqlCommand cmdT = new MySqlCommand(sqlToken, conexao))
                             {
                                 cmdT.Parameters.AddWithValue("@token", token);
+                                cmdT.Parameters.AddWithValue("@expiracao", DateTime.Now.AddMinutes(10));
                                 cmdT.Parameters.AddWithValue("@email", email);
                                 await cmdT.ExecuteNonQueryAsync();
                             }
@@ -138,14 +184,15 @@ namespace PlanejaAi.Controllers
             using (MySqlConnection conexao = new MySqlConnection(stringConexao))
             {
                 await conexao.OpenAsync();
-                string sql = "SELECT COUNT(*) FROM login WHERE login_token = @token AND login_token IS NOT NULL";
+                
+                string sql = "SELECT COUNT(*) FROM login WHERE login_token = @token AND login_token IS NOT NULL AND login_token_expiracao > NOW()";
                 using (MySqlCommand cmd = new MySqlCommand(sql, conexao))
                 {
                     cmd.Parameters.AddWithValue("@token", token);
                     var existe = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     if (existe == 0)
                     {
-                        TempData["Erro"] = "Este link já foi utilizado ou expirou.";
+                        TempData["Erro"] = "Este link já foi utilizado ou expirou o prazo de 10 minutos.";
                         return RedirectToAction("Index");
                     }
                 }
@@ -168,7 +215,7 @@ namespace PlanejaAi.Controllers
 
             if (!requisitosPreenchidos)
             {
-                ViewBag.Erro = "Para sua segurança, a senha deve conter no mínimo 8 caracteres, incluindo obrigatoriamente letras maiúsculas, números e caracteres especiais.";
+                ViewBag.Erro = "A senha deve conter no mínimo 8 caracteres, incluindo letras maiúsculas, números e caracteres especiais.";
                 ViewBag.Token = token;
                 return View();
             }
@@ -177,7 +224,8 @@ namespace PlanejaAi.Controllers
             {
                 await conexao.OpenAsync();
 
-                string sqlBusca = "SELECT emp_id, login_email, login_senha FROM login WHERE login_token = @token";
+                
+                string sqlBusca = "SELECT emp_id, login_email, login_senha FROM login WHERE login_token = @token AND login_token_expiracao > NOW()";
                 int empId = 0;
                 string usuarioEmail = "";
                 string senhaAtual = "";
@@ -195,27 +243,36 @@ namespace PlanejaAi.Controllers
                         }
                         else
                         {
-                            TempData["Erro"] = "Esta solicitação expirou ou já foi processada.";
+                            TempData["Erro"] = "Sessão expirada. Solicite a redefinição de senha novamente.";
                             return RedirectToAction("Index");
                         }
                     }
                 }
 
-                if (novaSenha == senhaAtual)
+                bool senhaJaEraUsada = false;
+                try { senhaJaEraUsada = BCrypt.Net.BCrypt.Verify(novaSenha, senhaAtual); }
+                catch { senhaJaEraUsada = (novaSenha == senhaAtual); }
+
+                if (senhaJaEraUsada)
                 {
                     ViewBag.Erro = "A nova senha não pode ser igual à senha utilizada anteriormente.";
                     ViewBag.Token = token;
                     return View();
                 }
 
-                string sqlUpdate = "UPDATE login SET login_senha = @senha, login_token = NULL WHERE login_token = @token";
+                string senhaCriptografada = BCrypt.Net.BCrypt.HashPassword(novaSenha);
+
+               
+                string sqlUpdate = "UPDATE login SET login_senha = @senha, login_token = NULL, login_token_expiracao = NULL, login_senha_atualizacao = NOW() WHERE login_token = @token";
                 using (MySqlCommand cmdUpdate = new MySqlCommand(sqlUpdate, conexao))
                 {
-                    cmdUpdate.Parameters.AddWithValue("@senha", novaSenha);
+                    cmdUpdate.Parameters.AddWithValue("@senha", senhaCriptografada);
                     cmdUpdate.Parameters.AddWithValue("@token", token);
+
 
                     if (await cmdUpdate.ExecuteNonQueryAsync() > 0)
                     {
+
                         await SalvarLog("ALTERAR_SENHA", "login", "Senha alterada com sucesso via recuperação", empId, usuarioEmail, ipAtual);
                         TempData["Sucesso"] = "Sua senha foi redefinida com sucesso. Acesse sua conta.";
                         return RedirectToAction("Index");
@@ -240,7 +297,6 @@ namespace PlanejaAi.Controllers
             return RedirectToAction("Index", "Login");
         }
 
-        // MÉTODO SALVAR LOG ATUALIZADO PARA USAR A CLASSE LOG.CS E O CONTEXTO
         private async Task SalvarLog(string acao, string tabela, string desc, int empId, string usuario, string ip = "IP Desconhecido")
         {
             try
@@ -277,56 +333,21 @@ namespace PlanejaAi.Controllers
                 };
 
                 string corpoHtml = $@"
+<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; color: #213448;'>
+    <h2 style='color: #547792;'>Recuperação de Senha</h2>
+    <p>Olá <strong>{nomeUsuario}</strong>,</p>
+    <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Planeja Aí</strong>. Clique no botão abaixo para criar uma nova credencial (Este link é válido por 10 minutos):</p>
+    
+    <div style='margin: 30px 0;'>
+        <a href='{linkRedefinicao}' style='background: #547792; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Redefinir Minha Senha</a>
+    </div>
 
-    <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px; color: #213448;'>
-
-        <h2 style='color: #547792;'>Recuperação de Senha</h2>
-
-        <p>Olá <strong>{nomeUsuario}</strong>,</p>
-
-        <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>Planeja Aí</strong>. Clique no botão abaixo para criar uma nova credencial:</p>
-
-        
-
-        <div style='margin: 30px 0;'>
-
-            <a href='{linkRedefinicao}' style='background: #547792; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Redefinir Minha Senha</a>
-
-        </div>
-
-
-
-        <hr style='border: 0; border-top: 2px solid #f2dede; margin-top: 20px;'>
-
-        
-
-        <div style='background-color: #fcf8e3; padding: 15px; border-radius: 5px; border: 1px solid #faebcc;'>
-
-            <p style='font-size: 0.9rem; color: #8a6d3b; margin: 0;'>
-
-                <strong><span style='color: #a94442;'>⚠️ Atenção:</span> Não foi você quem solicitou?</strong>
-
-            </p>
-
-            <p style='font-size: 0.85rem; color: #333; margin-top: 5px;'>
-
-                Se você não iniciou este processo, sua conta pode estar sob tentativa de acesso indevido. 
-
-                <strong>Não compartilhe este link com ninguém.</strong> Por segurança, recomendamos que acesse o sistema diretamente e atualize seus dados de segurança.
-
-            </p>
-
-        </div>
-
-        
-
-        <p style='font-size: 0.85rem; color: #666; margin-top: 15px;'>
-
-            Precisa de ajuda urgente? Fale com nosso time: <a href='mailto:suporte@planejaai.com' style='color: #547792; font-weight: bold;'>suporte@planejaai.com</a>
-
-        </p>
-
-    </div>";
+    <p style='font-size: 0.85rem; color: #666; margin-top: 20px; line-height: 1.5;'>
+        Se o botão acima não funcionar, copie e cole o link abaixo no seu navegador de internet:
+        <br><br>
+        <a href='{linkRedefinicao}' style='color: #547792; word-break: break-all;'>{linkRedefinicao}</a>
+    </p>
+</div>";
 
                 var mailMessage = new MailMessage { From = new MailAddress("felps.curreia@gmail.com", "Planeja Aí"), Subject = "Recuperação de Senha", Body = corpoHtml, IsBodyHtml = true };
                 mailMessage.To.Add(emailDestino);

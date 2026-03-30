@@ -9,15 +9,17 @@ namespace PlanejaAi.Data
         {
         }
 
-        // Aqui avisamos ao contexto que a tabela login existe
+        
         public DbSet<Login> Logins { get; set; }
 
-        // A tabela Eventos que você já tinha criado
+        
         public DbSet<Evento> Eventos { get; set; }
 
         public DbSet<Empresa> Empresas { get; set; }
 
         public DbSet<Log> Logs { get; set; }
+
+        public DbSet<Funcionario> Funcionarios { get; set; }
 
     }
 }

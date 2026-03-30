@@ -21,7 +21,7 @@
             --bg-fundo: var(--cor-bege);
             --bg-cartao: #ffffff;
             --texto-principal: var(--cor-escura);
-            --texto-suporte: #6c757d; /* Cinza para modo claro */
+            --texto-suporte: #6c757d; 
             --btn-bg: var(--cor-media);
             --btn-texto: #ffffff;
         }
@@ -30,7 +30,7 @@
             --bg-fundo: var(--cor-escura);
             --bg-cartao: var(--cor-media);
             --texto-principal: var(--cor-bege);
-            --texto-suporte: var(--cor-bege); /* Texto claro no modo escuro */
+            --texto-suporte: var(--cor-bege); 
             --btn-bg: var(--cor-clara);
             --btn-texto: var(--cor-escura);
         }
@@ -63,7 +63,7 @@
             width: auto;
         }
 
-        /* CORREÇÃO DAS LOGOS: Esconde por padrão e mostra conforme o tema */
+        
         .logo-light, .logo-dark {
             display: none;
         }
@@ -136,7 +136,7 @@
                 color: var(--btn-texto);
             }
 
-        /* Estilo da mensagem de diretriz */
+        
         .diretriz-texto {
             color: var(--texto-suporte) !important;
             font-size: 0.8rem;
@@ -154,6 +154,11 @@
             [data-theme="dark"] .form-control::placeholder {
                 color: rgba(234, 224, 207, 0.5);
             }
+
+        .was-validated .position-relative .form-control:valid,
+        .was-validated .position-relative .form-control:invalid {
+            background-image: none !important;
+        }
     </style>
 </head>
 <body>
@@ -172,66 +177,68 @@
     </div>
 
     <div class="login-container">
+
         <div class="login-card shadow">
 
-            @if (TempData["Erro"] != null || string.IsNullOrEmpty(token))
+            @if (TempData["AvisoNovaSenha"] != null)
             {
-                <div class="text-center">
-                    <i class="fa-solid fa-circle-exclamation text-danger mb-3" style="font-size: 3rem;"></i>
-                    <h2 style="font-weight: 700;">Link Inválido</h2>
-                    <p>@(TempData["Erro"] ?? "O token de recuperação é inválido ou expirou.")</p>
-                    <a asp-action="Index" class="btn btn-custom w-100 mt-3">Voltar para o Login</a>
+                <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; border: 1px solid #ffeeba;">
+                    <strong>Aviso:</strong> @TempData["AvisoNovaSenha"]
                 </div>
             }
-            else
+
+            <div class="text-center mb-4">
+                <h2 style="font-weight: 700;">Nova Senha</h2>
+                <p>Crie uma senha forte para sua segurança.</p>
+            </div>
+
+            @if (ViewBag.Erro != null)
             {
-                <div class="text-center mb-4">
-                    <h2 style="font-weight: 700;">Nova Senha</h2>
-                    <p>Crie uma senha forte para sua segurança.</p>
+                <div class="alert alert-danger text-center py-2 mb-3" style="font-size: 0.85rem;">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> @ViewBag.Erro
                 </div>
+            }
 
-                @if (ViewBag.Erro != null)
-                {
-                    <div class="alert alert-danger text-center py-2 mb-3" style="font-size: 0.85rem;">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i> @ViewBag.Erro
-                    </div>
-                }
+            <form asp-action="NovaSenha" method="post" novalidate class="needs-validation">
+                <input type="hidden" name="token" value="@token" />
 
-                <form asp-action="NovaSenha" method="post" novalidate class="needs-validation">
-                    <input type="hidden" name="token" value="@token" />
-
-                    <div class="mb-4">
-                        <label class="form-label">Digite sua nova senha:</label>
+                <div class="mb-4">
+                    <label class="form-label">Digite sua nova senha:</label>
+                    <div class="position-relative">
                         <input type="password"
                                name="novaSenha"
                                id="novaSenha"
-                               class="form-control"
+                               class="form-control pe-5"
                                required
                                minlength="8"
                                pattern="^(?=.*[A-Z])(?=.*\d)(?=.*[!@@#$%^&*()_+\-=\[\]{};':\\|,.<>\/?]).{8,}$"
                                placeholder="Digite a nova senha" />
 
-                        <div class="invalid-feedback">
-                            A senha não atende aos requisitos mínimos de segurança.
-                        </div>
-
-                        <div class="diretriz-texto">
-                            <i class="fa-solid fa-shield-halved me-1"></i>
-                            Diretriz de Segurança: A senha deve conter no mínimo 8 caracteres, incluindo obrigatoriamente letras maiúsculas, números e caracteres especiais.
-                        </div>
+                        <button type="button" class="btn border-0 position-absolute toggle-password" data-target="#novaSenha" style="right: 5px; top: 50%; transform: translateY(-50%); z-index: 10; color: var(--texto-principal);">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
                     </div>
 
-                    <button type="submit" class="btn btn-custom w-100 mb-2">Redefinir Senha</button>
-                </form>
-            }
-        </div>
-    </div>
+                    <div class="invalid-feedback mt-2">
+                        A senha não atende aos requisitos mínimos de segurança.
+                    </div>
 
+                    <div class="diretriz-texto mt-2">
+                        <i class="fa-solid fa-shield-halved me-1"></i>
+                        Diretriz de Segurança: A senha deve conter no mínimo 8 caracteres, incluindo obrigatoriamente letras maiúsculas, números e caracteres especiais.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-custom w-100 mb-2">Redefinir Senha</button>
+            </form>
+        </div>
+
+    </div>
     <script>
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
 
-        // Inicializar tema
+       
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark') { html.setAttribute('data-theme', 'dark'); }
 
@@ -242,7 +249,7 @@
             localStorage.setItem('theme', theme);
         });
 
-        // Validação Bootstrap
+        
         (function () {
             'use strict'
             var forms = document.querySelectorAll('.needs-validation')
@@ -256,6 +263,25 @@
                 }, false)
             })
         })()
+
+                
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const input = document.querySelector(targetId);
+                const icon = this.querySelector('i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash'); 
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye'); 
+                }
+            });
+        });
     </script>
 </body>
 </html>

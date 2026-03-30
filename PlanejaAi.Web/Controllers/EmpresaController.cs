@@ -54,14 +54,14 @@ namespace PlanejaAi.Controllers
 
         public async Task<IActionResult> Cadastro(string busca)
         {
-            // Começamos com a query base
+
             var empresasQuery = _context.Empresas.AsQueryable();
 
-            // Se houver algo escrito na busca, filtramos por Nome ou CNPJ
+
             if (!string.IsNullOrEmpty(busca))
             {
                 empresasQuery = empresasQuery.Where(e => e.Nome.Contains(busca) || e.Cnpj.Contains(busca));
-                ViewData["FiltroAtual"] = busca; // Mantém o texto na barra após pesquisar
+                ViewData["FiltroAtual"] = busca;
             }
 
             var lista = await empresasQuery.ToListAsync();
@@ -74,7 +74,7 @@ namespace PlanejaAi.Controllers
             var sugestoes = await _context.Empresas
                 .Where(e => e.Nome.Contains(termo))
                 .Select(e => e.Nome)
-                .Take(5) // Limita a 5 sugestões para ser rápido
+                .Take(5)
                 .ToListAsync();
 
             return Json(sugestoes);
@@ -91,9 +91,7 @@ namespace PlanejaAi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Manter(Empresa empresa)
         {
-            // --- VALIDAÇÕES DE FORMATO (REGEX) ---
 
-            // 1. Validação de CNPJ (Limpeza e Tamanho)
             if (!string.IsNullOrEmpty(empresa.Cnpj))
             {
                 string cnpjLimpo = Regex.Replace(empresa.Cnpj, @"[^\d]", "");
@@ -105,7 +103,7 @@ namespace PlanejaAi.Controllers
                 empresa.Cnpj = cnpjLimpo;
             }
 
-            // 2. Validação de CEP
+
             if (!string.IsNullOrEmpty(empresa.Cep))
             {
                 string cepLimpo = Regex.Replace(empresa.Cep, @"[^\d]", "");
@@ -117,7 +115,7 @@ namespace PlanejaAi.Controllers
                 empresa.Cep = cepLimpo;
             }
 
-            // 3. Validação de Telefone
+
             if (!string.IsNullOrEmpty(empresa.Telefone))
             {
                 string telLimpo = Regex.Replace(empresa.Telefone, @"[^\d]", "");
@@ -129,17 +127,14 @@ namespace PlanejaAi.Controllers
                 empresa.Telefone = telLimpo;
             }
 
-            // 4. Validação de E-mail básico
+
             if (string.IsNullOrEmpty(empresa.Email) || !empresa.Email.Contains("@"))
             {
                 ViewBag.Erro = "Por favor, insira um e-mail válido.";
                 return View(empresa);
             }
 
-            // --- VALIDAÇÃO DE REGRA DE NEGÓCIO (DUPLICIDADE) ---
 
-            // Verifica se já existe outra empresa com o mesmo CNPJ no banco
-            // e.Id != empresa.Id garante que, se for uma EDIÇÃO, ele não barrei a própria empresa
             var cnpjDuplicado = await _context.Empresas
                 .AnyAsync(e => e.Cnpj == empresa.Cnpj && e.Id != empresa.Id);
 
@@ -153,18 +148,18 @@ namespace PlanejaAi.Controllers
             {
                 if (empresa.Id == 0)
                 {
-                    // Nova Empresa
+
                     empresa.DataCadastro = DateTime.Now;
                     _context.Add(empresa);
                     await _context.SaveChangesAsync();
-                    await RegistrarLog("Inserção", $"Empresa {empresa.Nome} (CNPJ: {empresa.Cnpj}) cadastrada.");
+                    await RegistrarLog("INSERT", $"Empresa {empresa.Nome} (CNPJ: {empresa.Cnpj}) cadastrada.");
                 }
                 else
                 {
-                    // Atualizar Empresa
+
                     _context.Update(empresa);
                     await _context.SaveChangesAsync();
-                    await RegistrarLog("Edição", $"Dados da empresa {empresa.Nome} atualizados.");
+                    await RegistrarLog("UPDATE", $"Dados da empresa {empresa.Nome} atualizados.");
                 }
 
                 return RedirectToAction(nameof(Cadastro));
@@ -176,6 +171,21 @@ namespace PlanejaAi.Controllers
             }
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> Detalhes(int id)
+        {
+
+            var empresa = await _context.Empresas
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (empresa == null) return NotFound();
+
+
+            return View(empresa);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Deletar(int id)
         {
@@ -185,7 +195,7 @@ namespace PlanejaAi.Controllers
                 var nomeEmpresa = empresa.Nome;
                 _context.Empresas.Remove(empresa);
                 await _context.SaveChangesAsync();
-                await RegistrarLog("Exclusão", $"Empresa {nomeEmpresa} (ID: {id}) removida do sistema.");
+                await RegistrarLog("DELETE", $"Empresa {nomeEmpresa} (ID: {id}) removida do sistema.");
             }
             return RedirectToAction(nameof(Cadastro));
         }

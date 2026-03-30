@@ -4,7 +4,7 @@ namespace PlanejaAi.Models
 {
     public class Evento
     {
-        [Key] // Diz que isso é a Chave Primária (PK) no banco
+        [Key] 
         public int IdEvento { get; set; }
 
         [Required(ErrorMessage = "O nome do evento é obrigatório!")]
@@ -21,6 +21,6 @@ namespace PlanejaAi.Models
 
         public string Descricao { get; set; }
 
-        // Depois vamos colocar aqui a relação com Fornecedores e Checklist
+        
     }
 }

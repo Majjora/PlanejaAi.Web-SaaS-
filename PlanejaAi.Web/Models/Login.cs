@@ -11,25 +11,30 @@ namespace PlanejaAi.Models
         public int Id { get; set; }
 
         [Column("func_id")]
-        public int FuncionarioId { get; set; }
+        public int? FuncionarioId { get; set; }
 
         [Column("login_email")]
-        public string Email { get; set; }
-
+        public string? Email { get; set; }
         [Column("login_senha")]
-        public string Senha { get; set; }
+        public string? Senha { get; set; }
 
         [Column("emp_id")]
-        public int EmpresaId { get; set; }
+        public int? EmpresaId { get; set; }
 
         [Column("perfil_acesso")]
-        public string PerfilAcesso { get; set; }
+        public string? PerfilAcesso { get; set; } 
 
-        // Propriedades de navegação
+        [Column("login_token")]
+        public string? Token { get; set; } 
+
+        
         [ForeignKey("FuncionarioId")]
-        public virtual Funcionario Funcionario { get; set; }
+        public virtual Funcionario? Funcionario { get; set; }
 
         [ForeignKey("EmpresaId")]
-        public virtual Empresa Empresa { get; set; }
+        public virtual Empresa? Empresa { get; set; }
+
+        [Column("login_data_cadastro")]
+        public DateTime? DataCadastro { get; set; }
     }
 }

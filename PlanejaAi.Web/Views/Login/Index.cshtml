@@ -10,6 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
         :root {
@@ -85,7 +86,7 @@
             height: 28px;
         }
 
-        /* Lógica de exibição dos ícones e logos */
+        
         :root:not([data-theme="dark"]) .icon-sun,
         :root:not([data-theme="dark"]) .logo-light {
             display: block;
@@ -157,6 +158,14 @@
             color: var(--cor-bege);
             border: 1px solid var(--cor-clara);
         }
+
+        
+        .was-validated .form-control[type="password"]:valid,
+        .was-validated .form-control[type="password"]:invalid,
+        .form-control.is-valid[type="password"],
+        .form-control.is-invalid[type="password"] {
+            background-image: none !important;
+        }
     </style>
 </head>
 <body>
@@ -199,7 +208,12 @@
 
                 <div class="mb-4">
                     <label for="senha" class="form-label mb-1">Senha</label>
-                    <input type="password" class="form-control" id="senha" name="senha" placeholder="Digite sua senha" required />
+                    <div class="position-relative">
+                        <input type="password" class="form-control pe-5" id="senha" name="senha" placeholder="Digite sua senha" required />
+                        <button type="button" class="btn border-0 position-absolute toggle-password" data-target="#senha" style="right: 5px; top: 50%; transform: translateY(-50%); z-index: 10; color: var(--texto-principal);">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                     <div class="invalid-feedback">A senha é obrigatória.</div>
                 </div>
 
@@ -213,11 +227,11 @@
     </div>
 
     <script>
-        // Aplicar tema salvo ao carregar
+        
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme) { document.documentElement.setAttribute('data-theme', currentTheme); }
 
-        // Toggle de Tema
+        
         document.getElementById('themeToggle').addEventListener('click', () => {
             let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
@@ -225,12 +239,31 @@
             localStorage.setItem('theme', theme);
         });
 
-        // Validação
+        
         const form = document.querySelector('.needs-validation');
         form.addEventListener('submit', function (event) {
             if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
             form.classList.add('was-validated');
         }, false);
+
+                
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const input = document.querySelector(targetId);
+                const icon = this.querySelector('i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash'); 
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye'); 
+                }
+            });
+        });
     </script>
 </body>
 </html>

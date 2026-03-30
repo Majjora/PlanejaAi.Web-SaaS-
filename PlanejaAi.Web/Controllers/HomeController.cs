@@ -18,10 +18,10 @@ namespace PlanejaAi.Web.Controllers
 
         public IActionResult Index()
         {
-            // Usamos ClaimTypes.Name porque é assim que está no seu LoginController
+
             string nomeCompleto = User.Identity.Name ?? "Usuário";
 
-            // Pega apenas o primeiro nome
+            
             string primeiroNome = nomeCompleto.Trim().Split(' ')[0];
 
             ViewBag.NomeUsuario = primeiroNome;
