@@ -207,7 +207,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">E-mail (Login)*</label>
+                    <label class="form-label">E-mail*</label>
                     <input asp-for="Email" type="email" class="form-control" placeholder="exemplo@email.com" required />
                     <div class="invalid-feedback">Informe um e-mail válido.</div>
                 </div>
@@ -221,14 +221,15 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">Senha @(ehEdicao ? "(Vazio para manter)" : "*")</label>
+                    <label class="form-label">Senha*</label>
                     <input asp-for="Senha" type="password" class="form-control" required="@(!ehEdicao)" />
                     <div class="invalid-feedback">A senha é obrigatória para novos usuários.</div>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">Cargo</label>
-                    <input asp-for="Cargo" class="form-control" placeholder="Ex: Analista" />
+                    <label class="form-label">Cargo*</label>
+                    <input asp-for="Cargo" class="form-control" placeholder="Ex: Analista" required />
+                    <div class="invalid-feedback">O cargo é obrigatório.</div>
                 </div>
 
                 
@@ -237,18 +238,27 @@
                     <hr style="opacity: 0.1;" class="mt-1" />
                 </div>
 
+                
+                <div class="col-md-6">
+                    <label class="form-label">Perfil de Acesso*</label>
+                    <select asp-for="PerfilAcesso" class="form-select" required>
+                        <option value="users">User</option>
+                        <option value="admin">Admin</option>
+
+                        
+                        @if (ViewBag.PerfilLogado == "owner")
+                        {
+                            <option value="owner">Owner</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback">Selecione um perfil.</div>
+                </div>
+
+                
                 @if (ViewBag.PerfilLogado == "owner")
                 {
-                    <div class="col-md-6">
-                        <label class="form-label">Perfil de Acesso*</label>
-                        <select asp-for="PerfilAcesso" class="form-select" required>
-                            <option value="users">Usuário (User)</option>
-                            <option value="admin">Administrador (Admin)</option>
-                            <option value="owner">Dono do Sistema (Owner)</option>
-                        </select>
-                        <div class="invalid-feedback">Selecione um perfil.</div>
-                    </div>
-
+                   @if (!ehEdicao)
+                   {
                     <div class="col-md-6">
                         <label class="form-label">Empresa*</label>
                         <select asp-for="EmpresaId" class="form-select select2-empresa" required>
@@ -266,12 +276,12 @@
                 }
                 else
                 {
-                   
-                    <input type="hidden" asp-for="PerfilAcesso" />
                     <input type="hidden" asp-for="EmpresaId" />
-                    <div class="col-12">
-                        <p class="text-muted small italic">Como Administrador, este usuário será vinculado automaticamente à sua empresa.</p>
-                    </div>
+                    }
+                }
+                else
+                {
+                    <input type="hidden" asp-for="EmpresaId" />
                 }
             </div>
 
@@ -336,7 +346,9 @@
                 noResults: function () {
                     return "Nenhuma empresa encontrada";
                 }
-
+            }
+        });
+    });
     
     function validarCpf(valor) {
         var cpf = valor.replace(/\D/g, ''); 

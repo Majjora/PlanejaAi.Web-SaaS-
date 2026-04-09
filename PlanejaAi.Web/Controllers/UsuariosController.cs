@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace PlanejaAi.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "owner,admin")]
     public class UsuariosController : Controller
     {
         private readonly AppDbContext _context;
@@ -23,8 +23,6 @@ namespace PlanejaAi.Controllers
         {
             var perfil = User.FindFirstValue(ClaimTypes.Role);
             var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
-
-            if (perfil != "owner" && perfil != "admin") return RedirectToAction("Index", "Home");
 
             
             var query = _context.Logins
@@ -47,7 +45,7 @@ namespace PlanejaAi.Controllers
             return View("Manter", new UsuariosViewModel());
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar(UsuariosViewModel model)
@@ -55,16 +53,34 @@ namespace PlanejaAi.Controllers
             var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
             var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
 
-            
             if (perfilLogado == "admin")
             {
                 model.EmpresaId = empIdLogado;
-                model.PerfilAcesso = "users";
+                if (string.IsNullOrEmpty(model.PerfilAcesso) || model.PerfilAcesso == "owner")
+                {
+                    model.PerfilAcesso = "users";
+                }
+
+                ModelState.Remove("PerfilAcesso");
+            }
+
+            
+            if (!ModelState.IsValid)
+            {
+                CarregarViewBags();
+                return View("Manter", model);
+            }
+
+            bool emailJaExiste = await _context.Logins.AnyAsync(l => l.Email == model.Email);
+            if (emailJaExiste)
+            {
+                ViewBag.Erro = "Este e-mail já está cadastrado em outra conta. Por favor, utilize um e-mail diferente.";
+                CarregarViewBags();
+                return View("Manter", model);
             }
 
             try
             {
-                
                 var func = new Funcionario
                 {
                     Nome = model.Nome,
@@ -76,15 +92,14 @@ namespace PlanejaAi.Controllers
                 _context.Funcionarios.Add(func);
                 await _context.SaveChangesAsync();
 
-                
                 var login = new Login
                 {
                     FuncionarioId = func.Id,
                     Email = model.Email,
-                    
                     Senha = BCrypt.Net.BCrypt.HashPassword(model.Senha),
                     EmpresaId = model.EmpresaId,
-                    PerfilAcesso = model.PerfilAcesso ?? "users"
+                    PerfilAcesso = model.PerfilAcesso ?? "users",
+                    DataCadastro = DateTime.Now
                 };
                 _context.Logins.Add(login);
                 await _context.SaveChangesAsync();
@@ -100,7 +115,7 @@ namespace PlanejaAi.Controllers
             }
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> Editar(int id)
         {
@@ -109,6 +124,14 @@ namespace PlanejaAi.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (login == null) return NotFound();
+
+            var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
+            var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
+
+            if (perfilLogado == "admin" && login.EmpresaId != empIdLogado)
+            {
+                return RedirectToAction("Index", "Home"); 
+            }
 
             var model = new UsuariosViewModel
             {
@@ -130,18 +153,61 @@ namespace PlanejaAi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(UsuariosViewModel model)
         {
-            
+            var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
+
+            if (perfilLogado == "admin")
+            {
+                ModelState.Remove("EmpresaId");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Senha))
+            {
+                ModelState.Remove("Senha");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                CarregarViewBags();
+                return View("Manter", model);
+            }
+
+            bool emailJaExiste = await _context.Logins.AnyAsync(l => l.Email == model.Email && l.Id != model.Id);
+            if (emailJaExiste)
+            {
+                ViewBag.Erro = "Este e-mail já está sendo utilizado por outro usuário no sistema.";
+                CarregarViewBags();
+                return View("Manter", model);
+            }
+
             var loginOriginal = await _context.Logins
                 .Include(l => l.Funcionario)
                 .FirstOrDefaultAsync(x => x.Id == model.Id);
 
             if (loginOriginal == null) return NotFound();
 
-            
-            loginOriginal.Email = model.Email;
-            loginOriginal.PerfilAcesso = model.PerfilAcesso;
+            var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
 
-            
+            if (perfilLogado == "admin" && loginOriginal.EmpresaId != empIdLogado)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            loginOriginal.Email = model.Email;
+
+            if (perfilLogado == "admin")
+            {
+                if (model.PerfilAcesso != "owner")
+                {
+                    loginOriginal.PerfilAcesso = model.PerfilAcesso;
+                }
+            }
+            else
+            {
+                
+                loginOriginal.PerfilAcesso = model.PerfilAcesso;
+            }
+
+
             if (!string.IsNullOrWhiteSpace(model.Senha))
             {
                 
@@ -184,11 +250,18 @@ namespace PlanejaAi.Controllers
 
             if (login == null) return NotFound();
 
-            
+            var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
+            var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
+
+            if (perfilLogado == "admin" && login.EmpresaId != empIdLogado)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View(login);
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Deletar(int id)
@@ -197,20 +270,71 @@ namespace PlanejaAi.Controllers
 
             if (login != null)
             {
+                var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
+                var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
+
+               
+                var emailLogado = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? "";
+
+               
+                if (!string.IsNullOrEmpty(login.Email) && login.Email.Equals(emailLogado, StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["Erro"] = "Não é possível excluir a sua própria conta ativa.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                
+                if (!string.IsNullOrEmpty(login.PerfilAcesso) && login.PerfilAcesso.Equals("owner", StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["Erro"] = "Contas com perfil de 'Owner' não podem ser excluídas do sistema.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                
+                if (perfilLogado != null && perfilLogado.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    
+                    if (login.EmpresaId != empIdLogado)
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+
+                    
+                    if (login.PerfilAcesso == null || !login.PerfilAcesso.Equals("users", StringComparison.OrdinalIgnoreCase))
+                    {
+                        TempData["Erro"] = "Você não pode excluir um usuário com o mesmo nível de permissão que o seu.";
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+
                 var emailLog = login.Email;
                 var empIdLog = login.EmpresaId ?? 0;
 
-                
-                if (login.Funcionario != null) _context.Funcionarios.Remove(login.Funcionario);
-                _context.Logins.Remove(login);
+                try
+                {
+                    
+                    if (login.Funcionario != null)
+                    {
+                        _context.Funcionarios.Remove(login.Funcionario);
+                    }
 
-                await _context.SaveChangesAsync();
-                await RegistrarLog("DELETE", $"Usuário {emailLog} excluído", empIdLog);
+                    _context.Logins.Remove(login);
+
+                    await _context.SaveChangesAsync();
+                    await RegistrarLog("DELETE", $"Usuário {emailLog} excluído", empIdLog);
+
+                    TempData["Sucesso"] = "Usuário excluído com sucesso!";
+                }
+                catch (Exception)
+                {
+                    
+                    TempData["Erro"] = "Erro de exclusão: Este usuário possui vínculos importantes no sistema e não pôde ser excluído.";
+                }
             }
             return RedirectToAction(nameof(Index));
         }
 
-        
+
 
         private void CarregarViewBags()
         {

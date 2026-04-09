@@ -11,34 +11,42 @@ using System;
 using System.Linq;
 using PlanejaAi.Data;
 using PlanejaAi.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace PlanejaAi.Controllers
 {
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class LoginController : Controller
     {
-        private readonly string stringConexao = "Server=localhost;Database=planeja_ai;User=root;Password=felps123;";
+        private readonly string _stringConexao;
+        private readonly string _emailRemetente; 
+        private readonly string _senhaEmail;     
         private readonly AppDbContext _context;
 
-        public LoginController(AppDbContext context)
+        public LoginController(AppDbContext context, IConfiguration configuracao)
         {
             _context = context;
+            
+            _stringConexao = configuracao.GetConnectionString("ConexaoPadrao");
+
+            _emailRemetente = configuracao.GetSection("EmailSettings:Email").Value;
+            _senhaEmail = configuracao.GetSection("EmailSettings:Senha").Value;
         }
 
         [HttpGet]
         public IActionResult Index() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Entrar(string email, string senha)
         {
             string ipAtual = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido";
 
-            using (MySqlConnection conexao = new MySqlConnection(stringConexao))
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
             {
                 await conexao.OpenAsync();
 
-
-                string sql = "SELECT f.func_id, f.func_nome, l.perfil_acesso, l.emp_id, l.login_senha, l.login_senha_atualizacao FROM login l INNER JOIN funcionarios f ON l.func_id = f.func_id WHERE l.login_email = @email";
+                string sql = "SELECT f.func_id, f.func_nome, l.perfil_acesso, l.emp_id, l.login_senha, l.login_senha_atualizacao, e.emp_status FROM login l INNER JOIN funcionarios f ON l.func_id = f.func_id INNER JOIN empresas e ON l.emp_id = e.emp_id WHERE l.login_email = @email";
 
                 using (MySqlCommand comando = new MySqlCommand(sql, conexao))
                 {
@@ -60,15 +68,25 @@ namespace PlanejaAi.Controllers
                                 string perfilAcesso = leitor.GetString("perfil_acesso");
                                 string empresaId = leitor["emp_id"].ToString();
                                 string funcId = leitor["func_id"].ToString();
+                                string statusEmpresa = leitor["emp_status"].ToString();
 
-                                
+                                if (statusEmpresa == "Inativa" || statusEmpresa == "Suspensa")
+                                {
+                                    leitor.Close();
+
+                                    await SalvarLog("LOGIN_BLOQUEADO", "login", $"Acesso bloqueado: Empresa {statusEmpresa}", int.Parse(empresaId), nomeFuncionario, ipAtual);
+
+                                    ViewBag.Erro = "O acesso desta empresa está temporariamente suspenso. Por favor, entre em contato com o suporte. Suporte@email.com";
+                                    return View("Index");
+                                }
+
                                 DateTime? dataAtualizacao = leitor.IsDBNull(leitor.GetOrdinal("login_senha_atualizacao"))
                                     ? (DateTime?)null
                                     : leitor.GetDateTime("login_senha_atualizacao");
 
                                 if (dataAtualizacao == null || dataAtualizacao.Value.AddDays(30) < DateTime.Now)
                                 {
-                                    leitor.Close(); 
+                                    leitor.Close();
                                     string novoToken = Guid.NewGuid().ToString();
                                     string sqlToken = "UPDATE login SET login_token = @token, login_token_expiracao = @expiracao WHERE login_email = @email";
 
@@ -80,7 +98,6 @@ namespace PlanejaAi.Controllers
                                         await cmdT.ExecuteNonQueryAsync();
                                     }
 
-                                   
                                     if (dataAtualizacao == null)
                                     {
                                         TempData["AvisoNovaSenha"] = "Este é o seu primeiro acesso. Por favor, crie uma senha definitiva por segurança.";
@@ -105,6 +122,7 @@ namespace PlanejaAi.Controllers
                                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
                                 await SalvarLog("LOGIN", "login", "Acesso realizado com sucesso", int.Parse(empresaId), nomeFuncionario, ipAtual);
+                                TempData.Clear();
 
                                 return RedirectToAction("Index", "Home");
                             }
@@ -128,12 +146,13 @@ namespace PlanejaAi.Controllers
         public IActionResult RecuperarSenha() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RecuperarSenha(string email)
         {
             string ipAtual = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido";
             string token = Guid.NewGuid().ToString();
 
-            using (MySqlConnection conexao = new MySqlConnection(stringConexao))
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
             {
                 await conexao.OpenAsync();
                 string sqlBusca = "SELECT l.emp_id, f.func_nome FROM login l INNER JOIN funcionarios f ON l.func_id = f.func_id WHERE l.login_email = @email";
@@ -149,7 +168,6 @@ namespace PlanejaAi.Controllers
                             string nomeUsuario = leitor.GetString("func_nome");
                             leitor.Close();
 
-                            
                             string sqlToken = "UPDATE login SET login_token = @token, login_token_expiracao = @expiracao WHERE login_email = @email";
                             using (MySqlCommand cmdT = new MySqlCommand(sqlToken, conexao))
                             {
@@ -172,7 +190,7 @@ namespace PlanejaAi.Controllers
             }
 
             await SalvarLog("RECUPERAR_FALHA", "login", $"Tentativa de recuperação: e-mail {email} não encontrado", 0, email, ipAtual);
-            ViewBag.Erro = "E-mail não encontrado.";
+            ViewBag.Mensagem = "Link enviado com sucesso! Verifique seu e-mail.";
             return View();
         }
 
@@ -181,10 +199,10 @@ namespace PlanejaAi.Controllers
         {
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index");
 
-            using (MySqlConnection conexao = new MySqlConnection(stringConexao))
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
             {
                 await conexao.OpenAsync();
-                
+
                 string sql = "SELECT COUNT(*) FROM login WHERE login_token = @token AND login_token IS NOT NULL AND login_token_expiracao > NOW()";
                 using (MySqlCommand cmd = new MySqlCommand(sql, conexao))
                 {
@@ -203,6 +221,7 @@ namespace PlanejaAi.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> NovaSenha(string token, string novaSenha)
         {
             string ipAtual = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido";
@@ -220,11 +239,10 @@ namespace PlanejaAi.Controllers
                 return View();
             }
 
-            using (MySqlConnection conexao = new MySqlConnection(stringConexao))
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
             {
                 await conexao.OpenAsync();
 
-                
                 string sqlBusca = "SELECT emp_id, login_email, login_senha FROM login WHERE login_token = @token AND login_token_expiracao > NOW()";
                 int empId = 0;
                 string usuarioEmail = "";
@@ -262,17 +280,14 @@ namespace PlanejaAi.Controllers
 
                 string senhaCriptografada = BCrypt.Net.BCrypt.HashPassword(novaSenha);
 
-               
                 string sqlUpdate = "UPDATE login SET login_senha = @senha, login_token = NULL, login_token_expiracao = NULL, login_senha_atualizacao = NOW() WHERE login_token = @token";
                 using (MySqlCommand cmdUpdate = new MySqlCommand(sqlUpdate, conexao))
                 {
                     cmdUpdate.Parameters.AddWithValue("@senha", senhaCriptografada);
                     cmdUpdate.Parameters.AddWithValue("@token", token);
 
-
                     if (await cmdUpdate.ExecuteNonQueryAsync() > 0)
                     {
-
                         await SalvarLog("ALTERAR_SENHA", "login", "Senha alterada com sucesso via recuperação", empId, usuarioEmail, ipAtual);
                         TempData["Sucesso"] = "Sua senha foi redefinida com sucesso. Acesse sua conta.";
                         return RedirectToAction("Index");
@@ -294,6 +309,7 @@ namespace PlanejaAi.Controllers
 
             await SalvarLog("LOGOUT", "login", "Saída do sistema", empId, User.Identity.Name, ipAtual);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData.Clear();
             return RedirectToAction("Index", "Login");
         }
 
@@ -328,7 +344,7 @@ namespace PlanejaAi.Controllers
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
-                    Credentials = new NetworkCredential("felps.curreia@gmail.com", "bojvskuosxlhngtb"),
+                    Credentials = new NetworkCredential(_emailRemetente, _senhaEmail), 
                     EnableSsl = true,
                 };
 
@@ -349,7 +365,7 @@ namespace PlanejaAi.Controllers
     </p>
 </div>";
 
-                var mailMessage = new MailMessage { From = new MailAddress("felps.curreia@gmail.com", "Planeja Aí"), Subject = "Recuperação de Senha", Body = corpoHtml, IsBodyHtml = true };
+                var mailMessage = new MailMessage { From = new MailAddress(_emailRemetente, "Planeja Aí"), Subject = "Recuperação de Senha", Body = corpoHtml, IsBodyHtml = true };
                 mailMessage.To.Add(emailDestino);
                 smtpClient.Send(mailMessage);
             }

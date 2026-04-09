@@ -23,7 +23,7 @@ namespace PlanejaAi.Controllers
             try
             {
                 var usuarioNome = User.Identity?.Name ?? "Sistema";
-                var ipClient = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "::1";
+                var ipClient = HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "::1";
                 var empIdClaim = User.FindFirst("EmpresaId")?.Value;
 
                 int? empId = null;
@@ -80,6 +80,7 @@ namespace PlanejaAi.Controllers
             return Json(sugestoes);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Manter(int? id)
         {
             if (id == null) return View(new Empresa());
@@ -140,7 +141,7 @@ namespace PlanejaAi.Controllers
 
             if (cnpjDuplicado)
             {
-                ViewBag.Erro = "Este CNPJ já está cadastrado para outra empresa.";
+                ViewBag.Erro = "Este CNPJ já está cadastrado.";
                 return View(empresa);
             }
 
@@ -166,7 +167,9 @@ namespace PlanejaAi.Controllers
             }
             catch (Exception ex)
             {
-                ViewBag.Erro = "Erro ao salvar no banco de dados: " + ex.Message;
+                System.Diagnostics.Debug.WriteLine($"[ERRO CRÍTICO] EmpresaController.Manter: {ex.Message}");
+
+                ViewBag.Erro = "Não foi possível salvar os dados da empresa. Por favor, tente novamente em instantes ou contate o suporte.";
                 return View(empresa);
             }
         }
@@ -187,18 +190,58 @@ namespace PlanejaAi.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Deletar(int id)
         {
-            var empresa = await _context.Empresas.FindAsync(id);
-            if (empresa != null)
+            try
             {
-                var nomeEmpresa = empresa.Nome;
-                _context.Empresas.Remove(empresa);
-                await _context.SaveChangesAsync();
-                await RegistrarLog("DELETE", $"Empresa {nomeEmpresa} (ID: {id}) removida do sistema.");
+                var temUsuarios = await _context.Logins.AnyAsync(u => u.EmpresaId == id);
+                if (temUsuarios)
+                {
+                    TempData["Erro"] = "Não é possível excluir: existem usuários vinculados.";
+                    return RedirectToAction(nameof(Cadastro));
+                }
+                var temEventos = await _context.Eventos.AnyAsync(e => e.EmpresaId == id);
+                if (temEventos)
+                {
+                    TempData["Erro"] = "Não é possível excluir: existem eventos cadastrados.";
+                    return RedirectToAction(nameof(Cadastro));
+                }
+
+                var empresa = await _context.Empresas.FindAsync(id);
+                if (empresa != null)
+                {
+                    var nomeEmpresa = empresa.Nome;
+
+                    await _context.Database.ExecuteSqlRawAsync("UPDATE logs SET emp_id = NULL WHERE emp_id = {0}", id);
+
+                    _context.Empresas.Remove(empresa);
+                    await _context.SaveChangesAsync();
+
+                    var logExclusao = new Log
+                    {
+                        Acao = "DELETE",
+                        Tabela = "empresas",
+                        Descricao = $"Empresa {nomeEmpresa} (ID: {id}) removida definitivamente.",
+                        Usuario = User.Identity?.Name ?? "Sistema",
+                        Ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido",
+                        Data = DateTime.Now,
+                        EmpresaId = null 
+                    };
+                    _context.Logs.Add(logExclusao);
+                    await _context.SaveChangesAsync();
+
+                    TempData["Sucesso"] = "Empresa excluída com sucesso!";
+                }
             }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERRO CRÍTICO] EmpresaController.Deletar: {ex.Message}");
+
+                TempData["Erro"] = "Ocorreu um erro interno ao tentar excluir a empresa. A operação foi cancelada.";
+            }
+
             return RedirectToAction(nameof(Cadastro));
         }
     }
-
 }

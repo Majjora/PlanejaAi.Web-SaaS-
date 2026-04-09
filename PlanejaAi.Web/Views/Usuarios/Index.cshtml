@@ -185,7 +185,7 @@
                                     </a>
                                     <form asp-action="Deletar" asp-route-id="@item.Id" method="post" class="d-inline form-excluir">
                                         @Html.AntiForgeryToken()
-                                        <button type="button" class="btn btn-sm text-danger btn-excluir" data-nome="@item.Email" title="Excluir">
+                                        <button type="submit" class="btn btn-sm text-danger btn-excluir" data-nome="@item.Email" title="Excluir">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
@@ -200,18 +200,52 @@
 </div>
 
 <script>
-    
-    document.querySelectorAll('.btn-excluir').forEach(button => {
-        button.addEventListener('click', function () {
-            const form = this.closest('.form-excluir');
-            const nome = this.getAttribute('data-nome');
+    document.addEventListener("DOMContentLoaded", function() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        
+        const erroMsg = @Html.Raw(Json.Serialize(TempData["Erro"]));
+        const sucessoMsg = @Html.Raw(Json.Serialize(TempData["Sucesso"]));
+
+        if (erroMsg) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ação Negada!',
+                text: erroMsg,
+                background: isDark ? '#213448' : '#ffffff',
+                color: isDark ? '#EAE0CF' : '#213448',
+                confirmButtonColor: '#547792'
+            });
+        }
+
+        if (sucessoMsg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: sucessoMsg,
+                background: isDark ? '#213448' : '#ffffff',
+                color: isDark ? '#EAE0CF' : '#213448',
+                confirmButtonColor: '#547792'
+            });
+        }
+    });
+</script>
+
+<script>
+    document.querySelectorAll('.form-excluir').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            
+            const btn = this.querySelector('.btn-excluir');
+            const nome = btn.getAttribute('data-nome');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
             Swal.fire({
                 title: 'Excluir?',
                 text: `Deseja remover o usuário ${nome}?`,
                 icon: 'warning',
-                showCancelButton: true, 
+                showCancelButton: true,
                 background: isDark ? '#213448' : '#ffffff',
                 color: isDark ? '#EAE0CF' : '#213448',
                 confirmButtonColor: '#dc3545',
@@ -220,7 +254,8 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit();
+                    
+                    HTMLFormElement.prototype.submit.call(this);
                 }
             });
         });

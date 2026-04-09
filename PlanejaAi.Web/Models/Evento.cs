@@ -1,26 +1,32 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PlanejaAi.Models
 {
+    [Table("eventos")] 
     public class Evento
     {
-        [Key] 
+        [Key]
+        [Column("even_id")] 
         public int IdEvento { get; set; }
 
         [Required(ErrorMessage = "O nome do evento é obrigatório!")]
-        [StringLength(100)]
+        [Column("even_nome")] 
         public string Nome { get; set; }
 
-        [Required]
-        public DateTime DataInicio { get; set; }
+        [Column("even_data")]
+        public DateTime Data { get; set; }
 
-        public DateTime DataFim { get; set; }
+        [Column("even_local")]
+        public string? Local { get; set; }
 
-        [StringLength(200)]
-        public string Local { get; set; }
+        [Column("even_status")]
+        public string? Status { get; set; }
 
-        public string Descricao { get; set; }
+        [Column("emp_id")]
+        public int? EmpresaId { get; set; }
 
-        
+        [ForeignKey("EmpresaId")]
+        public virtual Empresa? Empresa { get; set; }
     }
 }

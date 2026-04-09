@@ -189,7 +189,41 @@
 
 <script>
 
-    
+    @if (TempData["Erro"] != null)
+    {
+            <text>
+            document.addEventListener("DOMContentLoaded", function() {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Atenção!',
+                    text: '@Html.Raw(TempData["Erro"])',
+                    background: isDark ? '#213448' : '#ffffff',
+                    color: isDark ? '#EAE0CF' : '#213448',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+            </text>
+    }
+
+    @if (TempData["Sucesso"] != null)
+    {
+            <text>
+            document.addEventListener("DOMContentLoaded", function() {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: '@Html.Raw(TempData["Sucesso"])',
+                    background: isDark ? '#213448' : '#ffffff',
+                    color: isDark ? '#EAE0CF' : '#213448',
+                    confirmButtonColor: '#547792'
+                });
+            });
+            </text>
+    }
+
+
     function aplicarFiltroEmpresas() {
         let textoBusca = document.getElementById('inputBuscaEmpresa').value.toLowerCase();
         let linhasTabela = document.querySelectorAll('.table tbody tr');
@@ -242,3 +276,4 @@
         });
     });
 </script>
+
