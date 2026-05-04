@@ -1,0 +1,119 @@
+﻿@model PlanejaAi.Models.CategoriaServico
+
+@{
+    bool isEdicao = Model.Id > 0;
+    ViewData["Title"] = isEdicao ? "Editar Categoria" : "Nova Categoria";
+}
+
+<style>
+    :root {
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
+    }
+
+    body {
+        background-color: var(--cor-bege) !important;
+        color: var(--cor-escura);
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura) !important;
+        color: var(--cor-bege);
+    }
+
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media) !important;
+        color: #ffffff;
+    }
+
+    .form-control {
+        border-color: var(--cor-clara);
+    }
+
+        .form-control:focus {
+            border-color: var(--cor-media);
+            box-shadow: 0 0 0 0.2rem rgba(84, 119, 146, 0.25);
+        }
+
+    [data-theme="dark"] .form-control {
+        background-color: var(--cor-escura);
+        color: #fff;
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+
+        .btn-planeja-primary:hover {
+            background-color: var(--cor-escura);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+        [data-theme="dark"] .btn-planeja-primary:hover {
+            background-color: #ffffff;
+            color: var(--cor-escura);
+        }
+</style>
+
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="m-0 fw-bold" style="color: var(--cor-media);">
+                @(isEdicao ? "Editar Categoria" : "Nova Categoria")
+            </h2>
+            <p class="text-muted small">Ex: Buffet, Fotografia, Decoração, etc.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
+            <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+
+    <div class="card-planeja shadow-sm">
+        <form asp-action="@(isEdicao ? "Editar" : "Criar")" method="post" novalidate>
+            @if (isEdicao)
+            {
+                <input type="hidden" asp-for="Id" />
+            }
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-4">
+                <label asp-for="Nome" class="form-label fw-bold">Nome da Categoria *</label>
+                <input asp-for="Nome" class="form-control form-control-lg" placeholder="Digite o nome..." required />
+                <span asp-validation-for="Nome" class="text-danger small"></span>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-planeja-primary px-5 py-2 shadow-sm">
+                    <i class="fa-solid fa-save me-2"></i>
+                    @(isEdicao ? "Salvar Alterações" : "Criar Categoria")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

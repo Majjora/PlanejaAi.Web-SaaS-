@@ -1,0 +1,295 @@
+﻿@model PlanejaAi.Models.Fornecedor
+@{
+    bool ehEdicao = Model != null && Model.Id > 0;
+    ViewData["Title"] = ehEdicao ? "Editar Fornecedor" : "Novo Fornecedor";
+}
+
+<style>
+    :root {
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
+    }
+
+    body {
+        background-color: var(--cor-bege) !important;
+        color: var(--cor-escura);
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura) !important;
+        color: var(--cor-bege);
+    }
+
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media) !important;
+    }
+
+    .titulo-manter {
+        color: var(--cor-media);
+    }
+
+    [data-theme="dark"] .titulo-manter {
+        color: var(--cor-bege);
+    }
+
+    .form-label {
+        color: var(--cor-media);
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+    }
+
+    [data-theme="dark"] .form-label {
+        color: var(--cor-bege);
+    }
+
+    .form-control, .form-select {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid var(--cor-clara);
+    }
+
+    [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
+        background-color: var(--cor-escura) !important;
+        color: #ffffff !important;
+        border-color: var(--cor-clara);
+    }
+
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn-planeja-outline {
+        border: 2px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn-planeja-primary:hover {
+        background-color: var(--cor-escura);
+        color: white;
+    }
+
+    .btn-planeja-outline:hover {
+        background-color: var(--cor-media);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+        [data-theme="dark"] .btn-planeja-primary:hover {
+            background-color: white;
+            color: var(--cor-escura);
+        }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border-color: var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+        [data-theme="dark"] .btn-planeja-outline:hover {
+            background-color: var(--cor-bege);
+            color: var(--cor-escura);
+        }
+
+    [data-theme="dark"] .form-check-label {
+        color: var(--cor-bege) !important;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="card-planeja shadow-sm">
+        <h3 class="mb-4 fw-bold titulo-manter">
+            <i class="fa-solid @(ehEdicao ? "fa-pen" : "fa-plus") me-2"></i> @ViewData["Title"]
+        </h3>
+
+        <form asp-action="@(ehEdicao ? "Editar" : "Criar")" method="post" novalidate>
+            @if (ehEdicao)
+            {
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="DataCadastro" />
+            }
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Nome" class="form-label">Nome do Fornecedor *</label>
+                    <input asp-for="Nome" class="form-control" placeholder="Ex: Distribuidora Silva" />
+                    <span asp-validation-for="Nome" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CnpjCpf" class="form-label">CNPJ / CPF *</label>
+                    <input asp-for="CnpjCpf" class="form-control" placeholder="Apenas números"
+                           maxlength="14" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                           onblur="verificarCpfCnpj(this.value)" />
+                    <span asp-validation-for="CnpjCpf" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-5 mb-3">
+                    <label asp-for="Email" class="form-label">E-mail *</label>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="contato@empresa.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Telefone" class="form-label">Telefone *</label>
+                    <input asp-for="Telefone" class="form-control" placeholder="(00) 00000-0000"
+                           maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                    <span asp-validation-for="Telefone" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <div class="form-check form-switch mb-2">
+                        @if (ehEdicao)
+                        {
+                            <input class="form-check-input" type="checkbox" asp-for="Status" id="ativoSwitch">
+                        }
+                        else
+                        {
+                            <input class="form-check-input" type="checkbox" asp-for="Status" id="ativoSwitch" checked="checked">
+                        }
+                        <label class="form-check-label fw-bold ms-2" for="ativoSwitch" style="color: var(--cor-media);">Fornecedor Ativo</label>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mb-4">
+                    <label asp-for="Observacao" class="form-label">Observações Internas</label>
+                    <textarea asp-for="Observacao" class="form-control" rows="3" placeholder="Informações adicionais sobre prazos, fretes, etc..."></textarea>
+                    <span asp-validation-for="Observacao" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <hr class="text-muted mb-4" />
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-planeja-outline px-4 py-2">Cancelar</a>
+                <button type="submit" class="btn btn-planeja-primary px-5 py-2">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function verificarCpfCnpj(valor) {
+            var doc = valor.replace(/\D/g, '');
+
+            if (doc.length === 0) return;
+
+            if (doc.length === 11) {
+                validarCpf(doc);
+            } else if (doc.length === 14) {
+                buscarCnpj(doc);
+            } else {
+                document.getElementById('CnpjCpf').value = '';
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tamanho Inválido',
+                    text: 'O campo deve ter exatos 11 números (CPF) ou 14 números (CNPJ).',
+                    background: isDark ? '#213448' : '#ffffff',
+                    color: isDark ? '#EAE0CF' : '#213448',
+                    confirmButtonColor: '#547792'
+                });
+            }
+        }
+
+        function testarCpf(strCPF) {
+            var Soma = 0;
+            var Resto;
+            if (strCPF == "00000000000" || strCPF == "11111111111" || strCPF == "22222222222" ||
+                strCPF == "33333333333" || strCPF == "44444444444" || strCPF == "55555555555" ||
+                strCPF == "66666666666" || strCPF == "77777777777" || strCPF == "88888888888" ||
+                strCPF == "99999999999") return false;
+
+            for (let i = 1; i <= 9; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (11 - i);
+            Resto = (Soma * 10) % 11;
+
+            if ((Resto == 10) || (Resto == 11)) Resto = 0;
+            if (Resto != parseInt(strCPF.substring(9, 10)) ) return false;
+
+            Soma = 0;
+            for (let i = 1; i <= 10; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (12 - i);
+            Resto = (Soma * 10) % 11;
+
+            if ((Resto == 10) || (Resto == 11)) Resto = 0;
+            if (Resto != parseInt(strCPF.substring(10, 11) ) ) return false;
+
+            return true;
+        }
+
+        function validarCpf(cpf) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+            if (!testarCpf(cpf)) {
+                document.getElementById('CnpjCpf').value = ''; 
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'CPF Inválido',
+                    text: 'O CPF informado não existe ou não é válido.',
+                    background: isDark ? '#213448' : '#ffffff',
+                    color: isDark ? '#EAE0CF' : '#213448',
+                    confirmButtonColor: '#547792'
+                });
+            }
+        }
+
+        function buscarCnpj(cnpj) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+            fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('CNPJ não encontrado');
+                    }
+                    return response.json();
+                })
+                .then(dados => {
+                    if (document.getElementById('Nome')) {
+                        document.getElementById('Nome').value = dados.razao_social || '';
+                    }
+                    if (document.getElementById('Email') && dados.email) {
+                        document.getElementById('Email').value = dados.email.toLowerCase();
+                    }
+                    if (document.getElementById('Telefone') && dados.ddd_telefone_1) {
+                        document.getElementById('Telefone').value = dados.ddd_telefone_1.replace(/\D/g, '');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('CnpjCpf').value = ''; 
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'CNPJ inválido ou não encontrado',
+                        text: 'Verifique o número digitado e tente novamente.',
+                        background: isDark ? '#213448' : '#ffffff',
+                        color: isDark ? '#EAE0CF' : '#213448',
+                        confirmButtonColor: '#547792'
+                    });
+                });
+        }
+    </script>
+}

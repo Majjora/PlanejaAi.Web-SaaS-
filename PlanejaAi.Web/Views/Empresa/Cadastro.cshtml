@@ -133,7 +133,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
                 <input type="text" id="inputBuscaEmpresa" name="busca" class="form-control"
-                       placeholder="Buscar empresa por nome ou CNPJ..."
+                       placeholder="Buscar empresa por nome, CPF ou CNPJ..."
                        value="@ViewData["FiltroAtual"]">
             </div>
             <button type="button" id="btnPesquisarEmpresa" class="btn btn-planeja-primary px-4 shadow-sm">Pesquisar</button>
@@ -146,7 +146,7 @@
                 <thead class="thead-planeja">
                     <tr>
                         <th class="ps-4 border-0">Nome</th>
-                        <th class="border-0">CNPJ</th>
+                        <th class="border-0">CPF / CNPJ</th>
                         <th class="border-0">Telefone</th>
                         <th class="text-center border-0">Status</th>
                         <th class="text-end pe-4 border-0">Ações</th>
@@ -163,7 +163,7 @@
                     {
                         <tr>
                             <td class="ps-4 fw-bold">@item.Nome</td>
-                            <td>@item.Cnpj</td>
+                            <td>@item.CpfCnpj</td>
                             <td>@item.Telefone</td>
                             <td class="text-center">
                                 <span class="badge @(item.Status == "Ativa" ? "bg-success" : "bg-danger")">@item.Status</span>
@@ -185,7 +185,6 @@
             </table>
         </div>
     </div>
-</div>
 
 <script>
 

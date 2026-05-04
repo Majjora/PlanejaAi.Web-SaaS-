@@ -5,6 +5,9 @@ using PlanejaAi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var chaveCriptografia = builder.Configuration["CriptografiaSettings:ChaveSecreta"];
+var ivCriptografia = builder.Configuration["CriptografiaSettings:IV"];
+PlanejaAi.Helpers.CriptografiaHelper.Inicializar(chaveCriptografia, ivCriptografia);
 
 var connectionString = builder.Configuration.GetConnectionString("ConexaoPadrao");
 
@@ -25,6 +28,15 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+var defaultCulture = new System.Globalization.CultureInfo("pt-BR");
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(defaultCulture),
+    SupportedCultures = new[] { defaultCulture },
+    SupportedUICultures = new[] { defaultCulture }
+};
+
+app.UseRequestLocalization(localizationOptions);
 
 if (!app.Environment.IsDevelopment())
 {

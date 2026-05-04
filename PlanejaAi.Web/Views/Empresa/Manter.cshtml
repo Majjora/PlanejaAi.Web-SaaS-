@@ -167,11 +167,11 @@
                     <div class="invalid-feedback">O nome da empresa é obrigatório.</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">CNPJ*</label>
-                    <input asp-for="Cnpj" id="cnpj" class="form-control" maxlength="14" required
-                           onblur="buscarCnpj(this.value)"
+                    <label class="form-label">CPF ou CNPJ*</label>
+                    <input asp-for="CpfCnpj" id="doc" class="form-control" maxlength="14" required
+                           onblur="validarEDispararBusca(this.value)"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" autocomplete="off" />
-                    <div class="invalid-feedback">Informe um CNPJ válido (apenas números).</div>
+                    <div class="invalid-feedback">Informe um CPF ou CNPJ válido.</div>
                 </div>
 
                 <div class="col-md-4">
@@ -284,6 +284,13 @@
             }, false)
         })
     })()
+
+    function validarEDispararBusca(valor) {
+    var doc = valor.replace(/\D/g, '');
+    if (doc.length === 14) {
+    buscarCnpj(doc);
+    }
+    }
 
     function buscarCep(valor) {
         var cep = valor.replace(/\D/g, '');

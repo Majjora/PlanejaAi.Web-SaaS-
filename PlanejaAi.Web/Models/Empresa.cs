@@ -20,7 +20,7 @@ namespace PlanejaAi.Models
         public string? Telefone { get; set; }
 
         [Column("emp_cnpj")]
-        public string? Cnpj { get; set; }
+        public string? CpfCnpj { get; set; }
 
         [Column("emp_data_cadastro")]
         public DateTime DataCadastro { get; set; } = DateTime.Now;

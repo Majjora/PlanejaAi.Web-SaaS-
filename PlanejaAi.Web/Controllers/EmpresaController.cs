@@ -60,7 +60,7 @@ namespace PlanejaAi.Controllers
 
             if (!string.IsNullOrEmpty(busca))
             {
-                empresasQuery = empresasQuery.Where(e => e.Nome.Contains(busca) || e.Cnpj.Contains(busca));
+                empresasQuery = empresasQuery.Where(e => e.Nome.Contains(busca) || e.CpfCnpj.Contains(busca));
                 ViewData["FiltroAtual"] = busca;
             }
 
@@ -93,15 +93,15 @@ namespace PlanejaAi.Controllers
         public async Task<IActionResult> Manter(Empresa empresa)
         {
 
-            if (!string.IsNullOrEmpty(empresa.Cnpj))
+            if (!string.IsNullOrEmpty(empresa.CpfCnpj))
             {
-                string cnpjLimpo = Regex.Replace(empresa.Cnpj, @"[^\d]", "");
-                if (cnpjLimpo.Length != 14)
+                string docLimpo = Regex.Replace(empresa.CpfCnpj, @"[^\d]", "");
+                if (docLimpo.Length != 11 && docLimpo.Length != 14)
                 {
-                    ViewBag.Erro = "O CNPJ deve conter exatamente 14 números.";
+                    ViewBag.Erro = "O documento deve conter 11 (CPF) ou 14 (CNPJ) números.";
                     return View(empresa);
                 }
-                empresa.Cnpj = cnpjLimpo;
+                empresa.CpfCnpj = docLimpo;
             }
 
 
@@ -136,12 +136,12 @@ namespace PlanejaAi.Controllers
             }
 
 
-            var cnpjDuplicado = await _context.Empresas
-                .AnyAsync(e => e.Cnpj == empresa.Cnpj && e.Id != empresa.Id);
+            var docDuplicado = await _context.Empresas
+                .AnyAsync(e => e.CpfCnpj == empresa.CpfCnpj && e.Id != empresa.Id);
 
-            if (cnpjDuplicado)
+            if (docDuplicado)
             {
-                ViewBag.Erro = "Este CNPJ já está cadastrado.";
+                ViewBag.Erro = "Este CPF/CNPJ já está cadastrado.";
                 return View(empresa);
             }
 
@@ -153,7 +153,7 @@ namespace PlanejaAi.Controllers
                     empresa.DataCadastro = DateTime.Now;
                     _context.Add(empresa);
                     await _context.SaveChangesAsync();
-                    await RegistrarLog("INSERT", $"Empresa {empresa.Nome} (CNPJ: {empresa.Cnpj}) cadastrada.");
+                    await RegistrarLog("CREATE", $"Empresa {empresa.Nome} (CNPJ: {empresa.CpfCnpj}) cadastrada.");
                 }
                 else
                 {

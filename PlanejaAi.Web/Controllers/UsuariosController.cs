@@ -64,7 +64,6 @@ namespace PlanejaAi.Controllers
                 ModelState.Remove("PerfilAcesso");
             }
 
-            
             if (!ModelState.IsValid)
             {
                 CarregarViewBags();
@@ -78,6 +77,19 @@ namespace PlanejaAi.Controllers
                 CarregarViewBags();
                 return View("Manter", model);
             }
+
+            bool nomeJaExisteNaEmpresa = await _context.Logins
+                .AnyAsync(l => l.EmpresaId == model.EmpresaId
+                            && l.Funcionario != null
+                            && l.Funcionario.Nome == model.Nome);
+
+            if (nomeJaExisteNaEmpresa)
+            {
+                ViewBag.Erro = $"Atenção: Já existe um colaborador chamado '{model.Nome}' cadastrado na sua empresa.";
+                CarregarViewBags();
+                return View("Manter", model);
+            }
+
 
             try
             {
@@ -148,14 +160,17 @@ namespace PlanejaAi.Controllers
             return View("Manter", model);
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(UsuariosViewModel model)
         {
             var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
 
-            if (perfilLogado == "admin")
+            bool isAdmin = string.Equals(perfilLogado, "admin", StringComparison.OrdinalIgnoreCase);
+            bool isOwner = string.Equals(perfilLogado, "owner", StringComparison.OrdinalIgnoreCase);
+
+            if (isAdmin)
             {
                 ModelState.Remove("EmpresaId");
             }
@@ -187,40 +202,63 @@ namespace PlanejaAi.Controllers
 
             var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
 
-            if (perfilLogado == "admin" && loginOriginal.EmpresaId != empIdLogado)
+            if (isAdmin && loginOriginal.EmpresaId != empIdLogado)
             {
                 return RedirectToAction("Index", "Home");
             }
 
+            bool nomeJaExisteNaEmpresa = await _context.Logins
+                .AnyAsync(l => l.EmpresaId == loginOriginal.EmpresaId
+                            && l.Id != model.Id
+                            && l.Funcionario != null
+                            && l.Funcionario.Nome == model.Nome);
+
+            if (nomeJaExisteNaEmpresa)
+            {
+                ViewBag.Erro = $"Atenção: Já existe outro colaborador chamado '{model.Nome}' cadastrado na sua empresa.";
+                CarregarViewBags();
+                return View("Manter", model);
+            }
+
+            var claimEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
+            var claimNome = User.Identity?.Name ?? "";
+
+            bool editandoEleMesmo = false;
+
+            if (!string.IsNullOrEmpty(claimEmail) && string.Equals(loginOriginal.Email, claimEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                editandoEleMesmo = true;
+            }
+            else if (!string.IsNullOrEmpty(claimNome) && loginOriginal.Funcionario != null && string.Equals(loginOriginal.Funcionario.Nome, claimNome, StringComparison.OrdinalIgnoreCase))
+            {
+                editandoEleMesmo = true;
+            }
+
             loginOriginal.Email = model.Email;
 
-            if (perfilLogado == "admin")
+            if (isAdmin)
             {
-                if (model.PerfilAcesso != "owner")
+                if (!editandoEleMesmo && !string.Equals(model.PerfilAcesso, "owner", StringComparison.OrdinalIgnoreCase))
                 {
                     loginOriginal.PerfilAcesso = model.PerfilAcesso;
                 }
             }
-            else
+            else if (isOwner)
             {
-                
                 loginOriginal.PerfilAcesso = model.PerfilAcesso;
             }
 
-
             if (!string.IsNullOrWhiteSpace(model.Senha))
             {
-                
                 loginOriginal.Senha = BCrypt.Net.BCrypt.HashPassword(model.Senha);
             }
 
-            
             if (loginOriginal.Funcionario != null)
             {
                 loginOriginal.Funcionario.Nome = model.Nome;
                 loginOriginal.Funcionario.Cpf = model.Cpf;
                 loginOriginal.Funcionario.Cargo = model.Cargo ?? "Colaborador";
-                loginOriginal.Funcionario.Email = model.Email; 
+                loginOriginal.Funcionario.Email = model.Email;
             }
 
             try
@@ -237,7 +275,7 @@ namespace PlanejaAi.Controllers
             }
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> Detalhes(int id)
         {
