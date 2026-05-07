@@ -18,6 +18,7 @@ namespace PlanejaAi.Data
         public DbSet<Empresa> Empresas { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Funcionario> Funcionarios { get; set; }
+        public DbSet<Cliente> Clientes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,6 +48,12 @@ namespace PlanejaAi.Data
                 v => CriptografiaHelper.Criptografar(v),
                 v => CriptografiaHelper.Descriptografar(v)
             );
+
+            modelBuilder.Entity<Cliente>(entity => {
+                entity.Property(e => e.Documento).HasConversion(
+                    v => CriptografiaHelper.Criptografar(v),
+                    v => CriptografiaHelper.Descriptografar(v));
+            });
         }
     }
 }

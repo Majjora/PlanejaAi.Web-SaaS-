@@ -74,6 +74,28 @@
             background-color: #ffffff;
             color: var(--cor-escura);
         }
+
+    .btn-planeja-outline {
+        border: 2px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border-color: var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+    .btn-planeja-outline:hover {
+        background-color: var(--cor-media);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+        background-color: var(--cor-bege);
+        color: var(--cor-escura);
+    }
 </style>
 
 <div class="container mt-5" style="max-width: 600px;">
@@ -84,9 +106,6 @@
             </h2>
             <p class="text-muted small">Ex: Buffet, Fotografia, Decoração, etc.</p>
         </div>
-        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
-            <i class="fa-solid fa-arrow-left me-2"></i>Voltar
-        </a>
     </div>
 
     <div class="card-planeja shadow-sm">
@@ -104,11 +123,14 @@
                 <span asp-validation-for="Nome" class="text-danger small"></span>
             </div>
 
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button type="submit" class="btn btn-planeja-primary px-5 py-2 shadow-sm">
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="submit" class="btn btn-planeja-primary px-4 py-2 shadow-sm">
                     <i class="fa-solid fa-save me-2"></i>
                     @(isEdicao ? "Salvar Alterações" : "Criar Categoria")
                 </button>
+                <a asp-action="Index" class="btn btn-planeja-outline px-4 py-2">
+                    <i class="fa-solid fa-xmark me-2"></i>Cancelar
+                </a>
             </div>
         </form>
     </div>

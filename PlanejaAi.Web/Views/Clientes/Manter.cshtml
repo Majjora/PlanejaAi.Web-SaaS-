@@ -1,0 +1,388 @@
+﻿@model PlanejaAi.Models.Cliente
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Novo Cliente" : "Editar Cliente";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    :root {
+    --cor-escura: #213448;
+    --cor-media: #547792;
+    --cor-clara: #94B4C1;
+    --cor-bege: #EAE0CF;
+    }
+
+    body {
+    background-color: var(--cor-bege) !important;
+    color: var(--cor-escura);
+    transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+    background-color: var(--cor-escura) !important;
+    color: var(--cor-bege);
+    }
+
+    .card-planeja {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    padding: 30px;
+    transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .card-planeja {
+    background-color: var(--cor-media) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .form-label {
+    color: var(--cor-media);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    }
+
+    [data-theme="dark"] .form-label {
+    color: var(--cor-bege);
+    }
+
+    .form-control, .form-select {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--cor-clara);
+    color: var(--cor-escura) !important;
+    }
+
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select {
+    background-color: var(--cor-escura) !important;
+    color: #ffffff !important;
+    border-color: var(--cor-clara);
+    }
+
+    .main-title {
+    color: var(--cor-media);
+    transition: color 0.3s ease;
+    }
+
+    [data-theme="dark"] .main-title {
+    color: var(--cor-bege) !important;
+    }
+
+    .section-title {
+    color: var(--cor-media);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-top: 2rem;
+    transition: color 0.3s ease;
+    }
+
+    [data-theme="dark"] .section-title {
+    color: var(--cor-bege) !important;
+    }
+
+    [data-theme="dark"] hr {
+    border-color: var(--cor-bege);
+    opacity: 0.2;
+    }
+
+    .btn-planeja-primary {
+    background-color: var(--cor-media);
+    color: white;
+    border: none;
+    font-weight: bold;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+    background-color: var(--cor-clara);
+    color: var(--cor-escura);
+    }
+
+    .btn-planeja-outline {
+    border: 2px solid var(--cor-media);
+    color: var(--cor-media);
+    font-weight: bold;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+    border-color: var(--cor-bege);
+    color: var(--cor-bege);
+    }
+
+    .btn-planeja-primary, .btn-planeja-outline {
+    transition: all 0.3s ease;
+    }
+
+    .btn-planeja-primary:hover {
+    background-color: var(--cor-escura);
+    color: white;
+    }
+
+    .btn-planeja-outline:hover {
+    background-color: var(--cor-media);
+    color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary:hover {
+    background-color: #ffffff;
+    color: var(--cor-escura);
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+    background-color: var(--cor-bege);
+    color: var(--cor-escura);
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="card-planeja">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="m-0 fw-bold main-title">@ViewData["Title"]</h2>
+        </div>
+
+        @if (ViewBag.Erro != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> @ViewBag.Erro
+            </div>
+        }
+
+        <form asp-action="Manter" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmpresaId" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nome Completo*</label>
+                    <input asp-for="Nome" class="form-control" required />
+                    <div class="invalid-feedback">O nome do cliente é obrigatório.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">CPF ou CNPJ*</label>
+                    <input asp-for="Documento" id="documento" class="form-control" maxlength="14" oninput="this.value = this.value.replace(/\D/g, '')" onblur="validarDocumentoInput(this)" required />
+                    <div class="invalid-feedback">Por favor, digite um CPF (11) ou CNPJ (14) válido.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status*</label>
+                    <select asp-for="Status" class="form-select" required>
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                    <div class="invalid-feedback">O status é obrigatório.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">E-mail*</label>
+                    <input asp-for="Email" type="email" class="form-control" required />
+                    <div class="invalid-feedback">Um e-mail válido é obrigatório.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Telefone*</label>
+                    <input asp-for="Telefone" class="form-control" maxlength="11" oninput="this.value = this.value.replace(/\D/g, '')" required />
+                    <div class="invalid-feedback">O telefone é obrigatório.</div>
+                </div>
+
+                <div class="col-12">
+                    <h5 class="section-title text-uppercase fw-bold">Endereço</h5>
+                    <hr style="opacity: 0.1;" class="mt-1" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">CEP*</label>
+                    <input asp-for="Cep" id="cep" class="form-control" maxlength="8" onblur="buscarCep(this.value)" oninput="this.value = this.value.replace(/\D/g, '')" required />
+                    <div class="invalid-feedback">O CEP é obrigatório.</div>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label">Logradouro*</label>
+                    <input asp-for="Logradouro" id="logradouro" class="form-control" required />
+                    <div class="invalid-feedback">O logradouro é obrigatório.</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Nº*</label>
+                    <input asp-for="Numero" id="numero" class="form-control" oninput="this.value = this.value.replace(/\D/g, '')" required />
+                    <div class="invalid-feedback">O número é obrigatório.</div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Bairro*</label>
+                    <input asp-for="Bairro" id="bairro" class="form-control" required />
+                    <div class="invalid-feedback">O bairro é obrigatório.</div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Cidade*</label>
+                    <input asp-for="Cidade" id="cidade" class="form-control" required />
+                    <div class="invalid-feedback">A cidade é obrigatória.</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">UF*</label>
+                    <input asp-for="Uf" id="uf" class="form-control" maxlength="2" required />
+                    <div class="invalid-feedback">A UF é obrigatória.</div>
+                </div>
+            </div>
+
+            <div class="mt-5 d-flex gap-2">
+                <button type="submit" class="btn btn-planeja-primary px-5 py-2 shadow-sm">
+                    <i class="fa-solid fa-save me-2"></i>Salvar
+                </button>
+                <a asp-action="Index" class="btn btn-planeja-outline px-4 py-2">
+                    <i class="fa-solid fa-xmark me-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function validarDocumentoInput(input) {
+    var doc = input.value.replace(/\D/g, '');
+        
+    if (doc === "") {
+    input.setCustomValidity('Obrigatório');
+    } else if (doc.length === 11) {
+
+    if (!testaCPF(doc)) {
+    input.setCustomValidity('CPF Inválido');
+    } else {
+    input.setCustomValidity('');
+    }
+    } else if (doc.length === 14) {
+ 
+    if (!testaCNPJ(doc)) {
+    input.setCustomValidity('CNPJ Inválido');
+    } else {
+    input.setCustomValidity('');
+          
+    
+    buscarCnpj(doc);
+    }
+    } else {
+
+    input.setCustomValidity('Tamanho inválido');
+    }
+    }
+
+
+    function buscarCnpj(cnpj) {
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`)
+    .then(response => {
+    if (!response.ok) throw new Error('CNPJ não encontrado');
+    return response.json();
+    })
+    .then(dados => {
+
+    document.getElementById('Nome').value = dados.razao_social;
+                
+
+    if (dados.ddd_telefone_1) {
+    document.getElementById('Telefone').value = dados.ddd_telefone_1.replace(/\D/g, '');
+    }
+
+    if (dados.cep) {
+    let cepLimpo = dados.cep.replace(/\D/g, '');
+    document.getElementById('cep').value = cepLimpo;
+    buscarCep(cepLimpo);
+    }
+    })
+    .catch(erro => {
+    console.log("Erro ao buscar CNPJ:", erro);
+    });
+    }
+
+
+    function testaCPF(strCPF) {
+    var Soma = 0;
+    var Resto;
+        
+    if (/^(\d)\1+$/.test(strCPF)) return false;
+
+    for (var i = 1; i <= 9; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (11 - i);
+    Resto = (Soma * 10) % 11;
+
+    if ((Resto == 10) || (Resto == 11)) Resto = 0;
+    if (Resto != parseInt(strCPF.substring(9, 10)) ) return false;
+
+    Soma = 0;
+    for (var i = 1; i <= 10; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (12 - i);
+    Resto = (Soma * 10) % 11;
+
+    if ((Resto == 10) || (Resto == 11)) Resto = 0;
+    if (Resto != parseInt(strCPF.substring(10, 11) ) ) return false;
+        
+    return true;
+    }
+
+
+    function testaCNPJ(cnpj) {
+    if (/^(\d)\1+$/.test(cnpj)) return false;
+
+    var tamanho = cnpj.length - 2
+    var numeros = cnpj.substring(0, tamanho);
+    var digitos = cnpj.substring(tamanho);
+    var soma = 0;
+    var pos = tamanho - 7;
+        
+    for (var i = tamanho; i >= 1; i--) {
+    soma += numeros.charAt(tamanho - i) * pos--;
+    if (pos < 2) pos = 9;
+    }
+    var resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if (resultado != digitos.charAt(0)) return false;
+
+    tamanho = tamanho + 1;
+    numeros = cnpj.substring(0, tamanho);
+    soma = 0;
+    pos = tamanho - 7;
+    for (var i = tamanho; i >= 1; i--) {
+    soma += numeros.charAt(tamanho - i) * pos--;
+    if (pos < 2) pos = 9;
+    }
+    resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if (resultado != digitos.charAt(1)) return false;
+
+    return true;
+    }
+
+ 
+    (function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+    if (!form.checkValidity()) {
+    event.preventDefault()
+    event.stopPropagation()
+    }
+    form.classList.add('was-validated')
+    }, false)
+    })
+    })()
+
+
+    function buscarCep(valor) {
+    var cep = valor.replace(/\D/g, '');
+    if (cep != "" && cep.length === 8) {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(response => response.json())
+    .then(dados => {
+    if (!("erro" in dados)) {
+    document.getElementById('logradouro').value = dados.logradouro;
+    document.getElementById('bairro').value = dados.bairro;
+    document.getElementById('cidade').value = dados.localidade;
+    document.getElementById('uf').value = dados.uf;
+    document.getElementById('numero').focus();
+    } else {
+    Swal.fire({
+    icon: 'error',
+    title: 'CEP não encontrado',
+    background: isDark ? '#213448' : '#ffffff',
+    color: isDark ? '#EAE0CF' : '#213448',
+    confirmButtonColor: '#547792'
+    });
+    }
+    });
+    }
+    }
+</script>
