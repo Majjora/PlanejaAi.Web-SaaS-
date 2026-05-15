@@ -19,14 +19,14 @@ namespace PlanejaAi.Controllers
     public class LoginController : Controller
     {
         private readonly string _stringConexao;
-        private readonly string _emailRemetente; 
-        private readonly string _senhaEmail;     
+        private readonly string _emailRemetente;
+        private readonly string _senhaEmail;
         private readonly AppDbContext _context;
 
         public LoginController(AppDbContext context, IConfiguration configuracao)
         {
             _context = context;
-            
+
             _stringConexao = configuracao.GetConnectionString("ConexaoPadrao");
 
             _emailRemetente = configuracao.GetSection("EmailSettings:Email").Value;
@@ -42,7 +42,7 @@ namespace PlanejaAi.Controllers
         {
             string ipAtual = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido";
 
-            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao))
             {
                 await conexao.OpenAsync();
 
@@ -152,7 +152,7 @@ namespace PlanejaAi.Controllers
             string ipAtual = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido";
             string token = Guid.NewGuid().ToString();
 
-            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao))
             {
                 await conexao.OpenAsync();
                 string sqlBusca = "SELECT l.emp_id, f.func_nome FROM login l INNER JOIN funcionarios f ON l.func_id = f.func_id WHERE l.login_email = @email";
@@ -199,7 +199,7 @@ namespace PlanejaAi.Controllers
         {
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Index");
 
-            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao))
             {
                 await conexao.OpenAsync();
 
@@ -239,7 +239,7 @@ namespace PlanejaAi.Controllers
                 return View();
             }
 
-            using (MySqlConnection conexao = new MySqlConnection(_stringConexao)) 
+            using (MySqlConnection conexao = new MySqlConnection(_stringConexao))
             {
                 await conexao.OpenAsync();
 
@@ -344,7 +344,7 @@ namespace PlanejaAi.Controllers
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
-                    Credentials = new NetworkCredential(_emailRemetente, _senhaEmail), 
+                    Credentials = new NetworkCredential(_emailRemetente, _senhaEmail),
                     EnableSsl = true,
                 };
 

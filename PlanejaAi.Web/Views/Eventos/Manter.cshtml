@@ -1,0 +1,452 @@
+﻿@model PlanejaAi.Models.Evento
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Novo Evento" : "Editar Evento";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    :root {
+    --cor-escura: #213448;
+    --cor-media: #547792;
+    --cor-clara: #94B4C1;
+    --cor-bege: #EAE0CF;
+    }
+
+    body {
+    background-color: var(--cor-bege) !important;
+    color: var(--cor-escura);
+    transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+    background-color: var(--cor-escura) !important;
+    color: var(--cor-bege);
+    }
+
+    .card-planeja {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    padding: 30px;
+    transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .card-planeja {
+    background-color: var(--cor-media) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .form-label {
+    color: var(--cor-media);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    }
+
+    [data-theme="dark"] .form-label {
+    color: var(--cor-bege);
+    }
+
+    .form-control, .form-select {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--cor-clara);
+    color: var(--cor-escura) !important;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    }
+
+    [data-theme="dark"] .form-control:disabled,
+    [data-theme="dark"] .form-select:disabled {
+    background-color: #1a2a3a !important;
+    color: #8c9cad !important;
+    border-color: #213448 !important;
+    }
+
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select {
+    background-color: var(--cor-escura) !important;
+    color: #ffffff !important;
+    border-color: var(--cor-clara);
+    }
+
+    .main-title {
+    color: var(--cor-media);
+    transition: color 0.3s ease;
+    }
+
+    [data-theme="dark"] .main-title {
+    color: var(--cor-bege) !important;
+    }
+
+    .section-title {
+    color: var(--cor-media);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-top: 2rem;
+    transition: color 0.3s ease;
+    }
+
+    [data-theme="dark"] .section-title {
+    color: var(--cor-bege) !important;
+    }
+
+    [data-theme="dark"] hr {
+    border-color: var(--cor-bege);
+    opacity: 0.2;
+    }
+
+    .btn-planeja-primary {
+    background-color: var(--cor-media);
+    color: white;
+    border: none;
+    font-weight: bold;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+    background-color: var(--cor-clara);
+    color: var(--cor-escura);
+    }
+
+    .btn-planeja-outline {
+    border: 2px solid var(--cor-media);
+    color: var(--cor-media);
+    font-weight: bold;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+    border-color: var(--cor-bege);
+    color: var(--cor-bege);
+    }
+
+    .btn-planeja-primary, .btn-planeja-outline {
+    transition: all 0.3s ease;
+    }
+
+    .btn-planeja-primary:hover {
+    background-color: var(--cor-escura);
+    color: white;
+    }
+
+    .btn-planeja-outline:hover {
+    background-color: var(--cor-media);
+    color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary:hover {
+    background-color: #ffffff;
+    color: var(--cor-escura);
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+    background-color: var(--cor-bege);
+    color: var(--cor-escura);
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="card-planeja">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="m-0 fw-bold main-title">@ViewData["Title"]</h2>
+        </div>
+
+        @if (ViewBag.Erro != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> @ViewBag.Erro
+            </div>
+        }
+
+        <form asp-action="Manter" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmpresaId" />
+            <input type="hidden" asp-for="DataCriacao" />
+            
+            <input type="hidden" id="hiddenFornecedorId" value="@ViewBag.FornecedorIdSelecionado" />
+            <input type="hidden" id="hiddenCategoriaId" value="@ViewBag.CategoriaIdSelecionada" />
+            <input type="hidden" id="hiddenProdutoId" value="@Model?.ProdutoLocalId" />
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <h5 class="section-title text-uppercase fw-bold mt-0">Informações Principais</h5>
+                    <hr style="opacity: 0.1;" class="mt-1" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Nome do Evento*</label>
+                    <input asp-for="Nome" class="form-control" placeholder="Ex: Casamento João e Maria" required />
+                    <div class="invalid-feedback">O nome do evento é obrigatório.</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Data do Evento*</label>
+                    <input asp-for="DataEvento" type="date" class="form-control" required />
+                    <div class="invalid-feedback">A data é obrigatória.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Cliente Vinculado*</label>
+                    <select asp-for="ClienteId" asp-items="ViewBag.Clientes" class="form-select" required>
+                        <option value="">-- Selecione o Cliente --</option>
+                    </select>
+                    <div class="invalid-feedback">É necessário vincular um cliente.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Tipo do Evento</label>
+                    <input asp-for="Tipo" class="form-control" placeholder="Ex: Casamento, Aniversário, Corporativo..." />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Privacidade do Evento*</label>
+                    <select asp-for="Privacidade" id="selectPrivacidade" class="form-select" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="Privado">Privado</option>
+                        <option value="Publico">Público</option>
+                    </select>
+                    <div class="invalid-feedback">Por favor, informe se o evento será público ou privado.</div>
+                </div>
+
+                <div class="col-md-6" id="divConvidados" style="display: none;">
+                    <label class="form-label" id="labelConvidados">Estimativa de Convidados/Público</label>
+                    <input asp-for="NumeroConvidados" type="number" class="form-control" placeholder="Ex: 150" min="1" />
+                </div>
+
+                <div class="col-12">
+                    <h5 class="section-title text-uppercase fw-bold mb-3 mt-4">
+                        Orçamento e Local
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Orçamento Total Planejado (R$)*</label>
+                            <input asp-for="ValorTotalOrcamento" type="text" class="form-control mascara-moeda" placeholder="0,00" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Local*</label>
+                            <select asp-for="LocalTipo" class="form-select" id="selectLocalTipo" required>
+                                <option value="1">Local Próprio</option>
+                                <option value="2">Fornecedor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6" id="divLocalProprioNome">
+                            <label class="form-label">Nome do Local</label>
+                            <input asp-for="NomeLocalProprio" class="form-control" placeholder="Ex: Salão Principal" />
+                        </div>
+                        <div class="col-md-6" id="divLocalProprioValor">
+                            <label class="form-label">Custo Interno do Local</label>
+                            <input asp-for="ValorLocalProprio" type="text" class="form-control mascara-moeda" placeholder="0,00" />
+                        </div>
+
+                        <div class="col-12" id="divLocalFornecedor" style="display: none;">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">1. Selecione o Fornecedor*</label>
+                                    <select id="selectFornecedorCascata" class="form-select" asp-items="ViewBag.Fornecedores">
+                                        <option value="">-- Selecione o Fornecedor --</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">2. Categoria do Local*</label>
+                                    <select id="selectCategoriaCascata" class="form-select" disabled>
+                                        <option value="">-- Selecione o fornecedor --</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">3. Local Exato*</label>
+                                    <select asp-for="ProdutoLocalId" id="selectProdutoCascata" class="form-select" disabled>
+                                        <option value="">-- Selecione a categoria --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex gap-2">
+                        <button type="submit" class="btn btn-planeja-primary px-5 py-2 shadow-sm">
+                            <i class="fa-solid fa-save me-2"></i>Salvar Evento
+                        </button>
+                        <a asp-action="Index" class="btn btn-planeja-outline px-4 py-2">
+                            <i class="fa-solid fa-xmark me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function formatarMoedaParaExibicao(elemento) {
+        let valor = elemento.value.replace(/\D/g, "");
+        if (valor === "") {
+        elemento.value = "";
+        return;
+        }
+        valor = (parseInt(valor) / 100).toFixed(2) + "";
+        valor = valor.replace(".", ",");
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        elemento.value = valor;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll('.mascara-moeda').forEach(input => {
+        if(input.value) {
+        formatarMoedaParaExibicao(input);
+        }
+        input.addEventListener('input', function() {
+        formatarMoedaParaExibicao(this);
+        });
+        });
+
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+        }, false)
+        });
+
+        const selectTipo = document.getElementById("selectLocalTipo");
+        const divNomeProprio = document.getElementById("divLocalProprioNome");
+        const divValorProprio = document.getElementById("divLocalProprioValor");
+        const divFornecedor = document.getElementById("divLocalFornecedor");
+
+        function alternarCamposLocal() {
+        if (selectTipo.value === "1") {
+        divNomeProprio.style.display = "block";
+        divValorProprio.style.display = "block";
+        divFornecedor.style.display = "none";
+        } else {
+        divNomeProprio.style.display = "none";
+        divValorProprio.style.display = "none";
+        divFornecedor.style.display = "block";
+        }
+        }
+
+        alternarCamposLocal();
+        selectTipo.addEventListener("change", alternarCamposLocal);
+
+        const selectPrivacidade = document.getElementById("selectPrivacidade");
+        const divConvidados = document.getElementById("divConvidados");
+        const labelConvidados = document.getElementById("labelConvidados");
+
+        function alternarConvidados() {
+        if (selectPrivacidade.value === "Publico") {
+        divConvidados.style.display = "block";
+        labelConvidados.innerText = "Estimativa de Público";
+        } else if (selectPrivacidade.value === "Privado") {
+        divConvidados.style.display = "block";
+        labelConvidados.innerText = "Número de Convidados";
+        } else {
+        divConvidados.style.display = "none";
+        }
+        }
+
+        if(selectPrivacidade) {
+        alternarConvidados();
+        selectPrivacidade.addEventListener("change", alternarConvidados);
+        }
+
+        const selectFornecedor = document.getElementById("selectFornecedorCascata");
+        const selectCategoria = document.getElementById("selectCategoriaCascata");
+        const selectProduto = document.getElementById("selectProdutoCascata");
+
+        async function carregarCategorias(fornecedorId, categoriaSelecionada = null) {
+        selectCategoria.innerHTML = '<option value="">Carregando...</option>';
+        selectCategoria.disabled = true;
+        selectProduto.innerHTML = '<option value="">-- Aguardando --</option>';
+        selectProduto.disabled = true;
+
+        if (!fornecedorId) {
+        selectCategoria.innerHTML = '<option value="">-- Selecione o fornecedor --</option>';
+        return;
+        }
+
+        try {
+        const response = await fetch(`/Eventos/BuscarCategoriasPorFornecedor?fornecedorId=${fornecedorId}`);
+        const categorias = await response.json();
+
+        selectCategoria.innerHTML = '<option value="">-- Selecione a Categoria --</option>';
+        categorias.forEach(c => {
+        selectCategoria.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+        });
+        selectCategoria.disabled = false;
+
+        if (categoriaSelecionada) selectCategoria.value = categoriaSelecionada;
+        } catch (error) {
+        console.error("Erro ao buscar categorias:", error);
+        selectCategoria.innerHTML = '<option value="">Erro ao carregar</option>';
+        }
+        }
+
+        async function carregarLocais(fornecedorId, categoriaId, produtoSelecionado = null) {
+        selectProduto.innerHTML = '<option value="">Carregando...</option>';
+        selectProduto.disabled = true;
+
+        if (!categoriaId) {
+        selectProduto.innerHTML = '<option value="">-- Selecione a categoria --</option>';
+        return;
+        }
+
+        try {
+        const response = await fetch(`/Eventos/BuscarLocaisPorCategoria?fornecedorId=${fornecedorId}&categoriaId=${categoriaId}`);
+        const produtos = await response.json();
+
+        selectProduto.innerHTML = '<option value="">-- Selecione o Local --</option>';
+        produtos.forEach(p => {
+        selectProduto.innerHTML += `<option value="${p.id}">${p.nome} (Custo: R$ ${p.custo.toFixed(2).replace('.', ',')})</option>`;
+        });
+        selectProduto.disabled = false;
+
+        if (produtoSelecionado) selectProduto.value = produtoSelecionado;
+        } catch (error) {
+        console.error("Erro ao buscar locais:", error);
+        selectProduto.innerHTML = '<option value="">Erro ao carregar</option>';
+        }
+        }
+
+        if (selectFornecedor) {
+        selectFornecedor.addEventListener("change", function () {
+        carregarCategorias(this.value);
+        });
+
+        selectCategoria.addEventListener("change", function () {
+        carregarLocais(selectFornecedor.value, this.value);
+        });
+
+        const hiddenFornecedorId = document.getElementById("hiddenFornecedorId").value;
+        const hiddenCategoriaId = document.getElementById("hiddenCategoriaId").value;
+        const hiddenProdutoId = document.getElementById("hiddenProdutoId").value;
+
+        if (hiddenFornecedorId) {
+        selectFornecedor.value = hiddenFornecedorId;
+        carregarCategorias(hiddenFornecedorId, hiddenCategoriaId).then(() => {
+        if (hiddenCategoriaId) {
+        carregarLocais(hiddenFornecedorId, hiddenCategoriaId, hiddenProdutoId);
+        }
+        });
+        }
+        }
+        });
+    </script>
+}

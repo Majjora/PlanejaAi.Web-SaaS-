@@ -12,128 +12,128 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
         
-        :root {
-            --cor-escura: #213448;
-            --cor-media: #547792;
-            --cor-clara: #94B4C1;
-            --cor-bege: #EAE0CF;
-            --bg-fundo: var(--cor-bege);
-            --bg-cartao: #ffffff;
-            --texto-principal: var(--cor-escura);
-            --btn-bg: var(--cor-media);
-            --btn-texto: #ffffff;
-            --link-cor: var(--cor-media);
-        }
+            :root {
+                --cor-escura: #213448;
+                --cor-media: #547792;
+                --cor-clara: #94B4C1;
+                --cor-bege: #EAE0CF;
+                --bg-fundo: var(--cor-bege);
+                --bg-cartao: #ffffff;
+                --texto-principal: var(--cor-escura);
+                --btn-bg: var(--cor-media);
+                --btn-texto: #ffffff;
+                --link-cor: var(--cor-media);
+            }
 
-        [data-theme="dark"] {
-            --bg-fundo: var(--cor-escura);
-            --bg-cartao: var(--cor-media);
-            --texto-principal: var(--cor-bege);
-            --btn-bg: var(--cor-clara);
-            --btn-texto: var(--cor-escura);
-            --link-cor: var(--cor-bege);
-        }
+            [data-theme="dark"] {
+                --bg-fundo: var(--cor-escura);
+                --bg-cartao: var(--cor-media);
+                --texto-principal: var(--cor-bege);
+                --btn-bg: var(--cor-clara);
+                --btn-texto: var(--cor-escura);
+                --link-cor: var(--cor-bege);
+            }
 
-        body {
-            background-color: var(--bg-fundo);
-            color: var(--texto-principal);
-            transition: 0.3s;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-        }
+            body {
+                background-color: var(--bg-fundo);
+                color: var(--texto-principal);
+                transition: 0.3s;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                margin: 0;
+            }
 
-        .top-bar {
-            width: 100%;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            .top-bar {
+                width: 100%;
+                padding: 20px 40px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
 
-        .custom-logo-size {
-            height: 60px;
-            width: auto;
-        }
+            .custom-logo-size {
+                height: 60px;
+                width: auto;
+            }
 
-        .logo-text {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-left: 10px;
-        }
+            .logo-text {
+                font-size: 1.8rem;
+                font-weight: 700;
+                margin-left: 10px;
+            }
 
-        .theme-toggle-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-        }
+            .theme-toggle-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 8px;
+                display: flex;
+                align-items: center;
+            }
 
-        .icon-sun, .icon-moon {
-            display: none;
-            width: 28px;
-            height: 28px;
-        }
+            .icon-sun, .icon-moon {
+                display: none;
+                width: 28px;
+                height: 28px;
+            }
 
-        :root:not([data-theme="dark"]) .icon-sun, :root:not([data-theme="dark"]) .logo-light {
-            display: block;
-        }
+            :root:not([data-theme="dark"]) .icon-sun, :root:not([data-theme="dark"]) .logo-light {
+                display: block;
+            }
 
-        [data-theme="dark"] .icon-moon, [data-theme="dark"] .logo-dark {
-            display: block;
-        }
+            [data-theme="dark"] .icon-moon, [data-theme="dark"] .logo-dark {
+                display: block;
+            }
 
-        :root:not([data-theme="dark"]) .logo-dark, [data-theme="dark"] .logo-light {
-            display: none;
-        }
+            :root:not([data-theme="dark"]) .logo-dark, [data-theme="dark"] .logo-light {
+                display: none;
+            }
 
-        .icon-sun {
-            fill: var(--cor-escura);
-        }
+            .icon-sun {
+                fill: var(--cor-escura);
+            }
 
-        .icon-moon {
-            fill: var(--cor-bege);
-        }
+            .icon-moon {
+                fill: var(--cor-bege);
+            }
 
-        .login-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+            .login-container {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
 
-        .login-card {
-            background-color: var(--bg-cartao);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            width: 100%;
-            max-width: 420px;
-            padding: 40px;
-        }
+            .login-card {
+                background-color: var(--bg-cartao);
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                width: 100%;
+                max-width: 420px;
+                padding: 40px;
+            }
 
-        .btn-custom {
-            background-color: var(--btn-bg);
-            color: var(--btn-texto);
-            font-weight: bold;
-            border: none;
-            padding: 12px;
-        }
+            .btn-custom {
+                background-color: var(--btn-bg);
+                color: var(--btn-texto);
+                font-weight: bold;
+                border: none;
+                padding: 12px;
+            }
 
-        .custom-link {
-            color: var(--link-cor);
-            text-decoration: none;
-            font-weight: 500;
-        }
+            .custom-link {
+                color: var(--link-cor);
+                text-decoration: none;
+                font-weight: 500;
+            }
 
-        [data-theme="dark"] .form-control {
-            background-color: var(--cor-escura);
-            color: var(--cor-bege);
-            border: 1px solid var(--cor-clara);
-        }
+            [data-theme="dark"] .form-control {
+                background-color: var(--cor-escura);
+                color: var(--cor-bege);
+                border: 1px solid var(--cor-clara);
+            }
     </style>
 </head>
 <body>
@@ -183,19 +183,19 @@
 
     <script>
         
-        if (localStorage.getItem('theme')) { document.documentElement.setAttribute('data-theme', localStorage.getItem('theme')); }
+            if (localStorage.getItem('theme')) { document.documentElement.setAttribute('data-theme', localStorage.getItem('theme')); }
 
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            theme === 'dark' ? document.documentElement.setAttribute('data-theme', 'dark') : document.documentElement.removeAttribute('data-theme');
-            localStorage.setItem('theme', theme);
-        });
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                theme === 'dark' ? document.documentElement.setAttribute('data-theme', 'dark') : document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', theme);
+            });
 
-        const form = document.querySelector('.needs-validation');
-        form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
-            form.classList.add('was-validated');
-        }, false);
+            const form = document.querySelector('.needs-validation');
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
+                form.classList.add('was-validated');
+            }, false);
     </script>
 </body>
 </html>

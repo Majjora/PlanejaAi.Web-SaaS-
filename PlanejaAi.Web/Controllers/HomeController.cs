@@ -21,7 +21,7 @@ namespace PlanejaAi.Web.Controllers
 
             string nomeCompleto = User.Identity.Name ?? "Usuário";
 
-            
+
             string primeiroNome = nomeCompleto.Trim().Split(' ')[0];
 
             ViewBag.NomeUsuario = primeiroNome;

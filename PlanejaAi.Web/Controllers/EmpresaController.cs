@@ -226,7 +226,7 @@ namespace PlanejaAi.Controllers
                         Usuario = User.Identity?.Name ?? "Sistema",
                         Ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "IP Desconhecido",
                         Data = DateTime.Now,
-                        EmpresaId = null 
+                        EmpresaId = null
                     };
                     _context.Logs.Add(logExclusao);
                     await _context.SaveChangesAsync();

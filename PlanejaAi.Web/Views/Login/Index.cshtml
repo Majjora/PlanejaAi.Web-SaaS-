@@ -13,159 +13,159 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        :root {
-            --cor-escura: #213448;
-            --cor-media: #547792;
-            --cor-clara: #94B4C1;
-            --cor-bege: #EAE0CF;
-            --bg-fundo: var(--cor-bege);
-            --bg-cartao: #ffffff;
-            --texto-principal: var(--cor-escura);
-            --btn-bg: var(--cor-media);
-            --btn-texto: #ffffff;
-            --link-cor: var(--cor-media);
-        }
+            :root {
+                --cor-escura: #213448;
+                --cor-media: #547792;
+                --cor-clara: #94B4C1;
+                --cor-bege: #EAE0CF;
+                --bg-fundo: var(--cor-bege);
+                --bg-cartao: #ffffff;
+                --texto-principal: var(--cor-escura);
+                --btn-bg: var(--cor-media);
+                --btn-texto: #ffffff;
+                --link-cor: var(--cor-media);
+            }
 
-        [data-theme="dark"] {
-            --bg-fundo: var(--cor-escura);
-            --bg-cartao: var(--cor-media);
-            --texto-principal: var(--cor-bege);
-            --btn-bg: var(--cor-clara);
-            --btn-texto: var(--cor-escura);
-            --link-cor: var(--cor-bege);
-        }
+            [data-theme="dark"] {
+                --bg-fundo: var(--cor-escura);
+                --bg-cartao: var(--cor-media);
+                --texto-principal: var(--cor-bege);
+                --btn-bg: var(--cor-clara);
+                --btn-texto: var(--cor-escura);
+                --link-cor: var(--cor-bege);
+            }
 
-        body {
-            background-color: var(--bg-fundo);
-            color: var(--texto-principal);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-        }
+            body {
+                background-color: var(--bg-fundo);
+                color: var(--texto-principal);
+                transition: background-color 0.3s ease, color 0.3s ease;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                margin: 0;
+            }
 
-        .top-bar {
-            width: 100%;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            .top-bar {
+                width: 100%;
+                padding: 20px 40px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-        }
+            .logo-container {
+                display: flex;
+                align-items: center;
+            }
 
-        .custom-logo-size {
-            height: 60px;
-            width: auto;
-        }
+            .custom-logo-size {
+                height: 60px;
+                width: auto;
+            }
 
-        .logo-text {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-left: 10px;
-            color: var(--texto-principal);
-        }
+            .logo-text {
+                font-size: 1.8rem;
+                font-weight: 700;
+                margin-left: 10px;
+                color: var(--texto-principal);
+            }
 
-        .theme-toggle-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+            .theme-toggle-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-        .icon-sun, .icon-moon {
-            display: none;
-            width: 28px;
-            height: 28px;
-        }
+            .icon-sun, .icon-moon {
+                display: none;
+                width: 28px;
+                height: 28px;
+            }
 
         
-        :root:not([data-theme="dark"]) .icon-sun,
-        :root:not([data-theme="dark"]) .logo-light {
-            display: block;
-        }
+            :root:not([data-theme="dark"]) .icon-sun,
+            :root:not([data-theme="dark"]) .logo-light {
+                display: block;
+            }
 
-        [data-theme="dark"] .icon-moon,
-        [data-theme="dark"] .logo-dark {
-            display: block;
-        }
+            [data-theme="dark"] .icon-moon,
+            [data-theme="dark"] .logo-dark {
+                display: block;
+            }
 
-        :root:not([data-theme="dark"]) .logo-dark,
-        :root:not([data-theme="dark"]) .icon-moon,
-        [data-theme="dark"] .logo-light,
-        [data-theme="dark"] .icon-sun {
-            display: none;
-        }
+            :root:not([data-theme="dark"]) .logo-dark,
+            :root:not([data-theme="dark"]) .icon-moon,
+            [data-theme="dark"] .logo-light,
+            [data-theme="dark"] .icon-sun {
+                display: none;
+            }
 
-        .icon-sun {
-            fill: var(--cor-escura);
-        }
+            .icon-sun {
+                fill: var(--cor-escura);
+            }
 
-        .icon-moon {
-            fill: var(--cor-bege);
-        }
+            .icon-moon {
+                fill: var(--cor-bege);
+            }
 
-        .login-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+            .login-container {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
 
-        .login-card {
-            background-color: var(--bg-cartao);
-            color: var(--texto-principal);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            width: 100%;
-            max-width: 420px;
-            padding: 40px;
-        }
+            .login-card {
+                background-color: var(--bg-cartao);
+                color: var(--texto-principal);
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                width: 100%;
+                max-width: 420px;
+                padding: 40px;
+            }
 
-        .btn-custom {
-            background-color: var(--btn-bg);
-            color: var(--btn-texto);
-            font-weight: bold;
-            border: none;
-            padding: 12px;
-        }
-
-            .btn-custom:hover {
-                filter: brightness(0.9);
+            .btn-custom {
+                background-color: var(--btn-bg);
                 color: var(--btn-texto);
+                font-weight: bold;
+                border: none;
+                padding: 12px;
             }
 
-        .custom-link {
-            color: var(--link-cor);
-            text-decoration: none;
-            font-weight: 500;
-        }
+                .btn-custom:hover {
+                    filter: brightness(0.9);
+                    color: var(--btn-texto);
+                }
 
-            .custom-link:hover {
-                text-decoration: underline;
+            .custom-link {
+                color: var(--link-cor);
+                text-decoration: none;
+                font-weight: 500;
             }
 
-        [data-theme="dark"] .form-control {
-            background-color: var(--cor-escura);
-            color: var(--cor-bege);
-            border: 1px solid var(--cor-clara);
-        }
+                .custom-link:hover {
+                    text-decoration: underline;
+                }
+
+            [data-theme="dark"] .form-control {
+                background-color: var(--cor-escura);
+                color: var(--cor-bege);
+                border: 1px solid var(--cor-clara);
+            }
 
         
-        .was-validated .form-control[type="password"]:valid,
-        .was-validated .form-control[type="password"]:invalid,
-        .form-control.is-valid[type="password"],
-        .form-control.is-invalid[type="password"] {
-            background-image: none !important;
-        }
+            .was-validated .form-control[type="password"]:valid,
+            .was-validated .form-control[type="password"]:invalid,
+            .form-control.is-valid[type="password"],
+            .form-control.is-invalid[type="password"] {
+                background-image: none !important;
+            }
     </style>
 </head>
 <body>
@@ -228,42 +228,42 @@
 
     <script>
         
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme) { document.documentElement.setAttribute('data-theme', currentTheme); }
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme) { document.documentElement.setAttribute('data-theme', currentTheme); }
 
         
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
-            else { document.documentElement.removeAttribute('data-theme'); }
-            localStorage.setItem('theme', theme);
-        });
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                if (theme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
+                else { document.documentElement.removeAttribute('data-theme'); }
+                localStorage.setItem('theme', theme);
+            });
 
         
-        const form = document.querySelector('.needs-validation');
-        form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
-            form.classList.add('was-validated');
-        }, false);
+            const form = document.querySelector('.needs-validation');
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
+                form.classList.add('was-validated');
+            }, false);
 
                 
-        document.querySelectorAll('.toggle-password').forEach(button => {
-            button.addEventListener('click', function () {
-                const targetId = this.getAttribute('data-target');
-                const input = document.querySelector(targetId);
-                const icon = this.querySelector('i');
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.querySelector(targetId);
+                    const icon = this.querySelector('i');
 
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash'); 
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye'); 
-                }
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
             });
-        });
     </script>
 </body>
 </html>

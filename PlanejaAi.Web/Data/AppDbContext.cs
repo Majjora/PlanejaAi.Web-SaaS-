@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PlanejaAi.Models;
-using PlanejaAi.Helpers; 
+using PlanejaAi.Helpers;
 
 namespace PlanejaAi.Data
 {
@@ -20,6 +20,11 @@ namespace PlanejaAi.Data
         public DbSet<Funcionario> Funcionarios { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
 
+        public DbSet<Evento> Evento { get; set; }
+        public DbSet<EventoItem> EventoItens { get; set; }
+        public DbSet<Convidado> Convidados { get; set; }
+        public DbSet<Checklist> Checklists { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -31,8 +36,8 @@ namespace PlanejaAi.Data
             modelBuilder.Entity<Empresa>()
                 .Property(e => e.CpfCnpj)
                 .HasConversion(
-                    v => CriptografiaHelper.Criptografar(v),  
-                    v => CriptografiaHelper.Descriptografar(v) 
+                    v => CriptografiaHelper.Criptografar(v),
+                    v => CriptografiaHelper.Descriptografar(v)
                 );
 
             modelBuilder.Entity<Funcionario>()
@@ -49,7 +54,8 @@ namespace PlanejaAi.Data
                 v => CriptografiaHelper.Descriptografar(v)
             );
 
-            modelBuilder.Entity<Cliente>(entity => {
+            modelBuilder.Entity<Cliente>(entity =>
+            {
                 entity.Property(e => e.Documento).HasConversion(
                     v => CriptografiaHelper.Criptografar(v),
                     v => CriptografiaHelper.Descriptografar(v));

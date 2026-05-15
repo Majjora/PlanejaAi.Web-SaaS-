@@ -28,7 +28,7 @@ namespace PlanejaAi.Models
 
         [Required(ErrorMessage = "O Valor Padrão é obrigatório.")]
         [Column("prod_valor_padrao")]
-        public decimal? ValorPadrao { get; set; } 
+        public decimal? ValorPadrao { get; set; }
 
         [Column("prod_unidade")]
         [StringLength(50)]

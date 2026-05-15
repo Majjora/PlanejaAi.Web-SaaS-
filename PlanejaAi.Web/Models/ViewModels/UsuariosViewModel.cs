@@ -4,7 +4,7 @@ namespace PlanejaAi.Models
 {
     public class UsuariosViewModel
     {
-        public int? Id { get; set; } 
+        public int? Id { get; set; }
 
         [Required(ErrorMessage = "Nome é obrigatório")]
         public string Nome { get; set; }

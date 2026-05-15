@@ -1,0 +1,230 @@
+﻿@model PlanejaAi.Models.EventoItem
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Vincular Produto/Serviço" : "Editar Produto/Serviço";
+}
+
+<style>
+    :root { --cor-escura: #213448; --cor-media: #547792; --cor-clara: #94B4C1; --cor-bege: #EAE0CF; }
+    body { background-color: var(--cor-bege) !important; color: var(--cor-escura); transition: all 0.3s ease; }
+    [data-theme="dark"] body { background-color: var(--cor-escura) !important; color: var(--cor-bege); }
+    
+    .card-planeja { background-color: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    [data-theme="dark"] .card-planeja { background-color: var(--cor-media) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    
+    .main-title { color: var(--cor-media); transition: color 0.3s ease; }
+    [data-theme="dark"] .main-title { color: var(--cor-bege) !important; }
+    
+    .subtitle-evento { color: #6c757d; font-size: 1.05rem; transition: color 0.3s ease; }
+    [data-theme="dark"] .subtitle-evento { color: #ffffff !important; } 
+    
+    .texto-destaque { color: var(--cor-media); font-weight: 800; transition: color 0.3s ease; }
+    [data-theme="dark"] .texto-destaque { color: var(--cor-bege) !important; }
+
+    .form-label { color: var(--cor-media); font-weight: 700; font-size: 0.9rem; }
+    [data-theme="dark"] .form-label { color: var(--cor-bege); }
+    
+    .form-control, .form-select { border: 1px solid var(--cor-clara); }
+    [data-theme="dark"] .form-control, [data-theme="dark"] .form-select { background-color: var(--cor-escura) !important; color: #fff !important; border-color: var(--cor-escura); }
+    
+    .btn-planeja-primary { background-color: var(--cor-media); color: white; font-weight: bold; border: none; }
+    .btn-planeja-primary:hover { background-color: var(--cor-escura); color: white; }
+    [data-theme="dark"] .btn-planeja-primary { background-color: var(--cor-clara); color: var(--cor-escura); }
+    [data-theme="dark"] .btn-planeja-primary:hover { background-color: #ffffff; }
+
+    .btn-planeja-outline { border: 2px solid var(--cor-media); color: var(--cor-media); font-weight: bold; transition: 0.3s; }
+    .btn-planeja-outline:hover { background-color: var(--cor-media); color: white; }
+    [data-theme="dark"] .btn-planeja-outline { border: 2px solid var(--cor-clara); color: var(--cor-bege); }
+    [data-theme="dark"] .btn-planeja-outline:hover { background-color: var(--cor-clara); color: var(--cor-escura); }
+    
+    .badge-orcamento { font-size: 0.9rem; padding: 8px 12px; }
+</style>
+
+<div class="container mt-5 mb-5" style="max-width: 800px;">
+    <div class="card-planeja">
+        
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h2 class="m-0 fw-bold main-title">@ViewData["Title"]</h2>
+                <p class="subtitle-evento m-0 mt-1">Evento: <span class="texto-destaque">@ViewBag.EventoNome</span></p>
+            </div>
+            @if (ViewBag.OrcamentoRestante != null)
+            {
+                <div class="badge badge-orcamento @(ViewBag.OrcamentoRestante >= 0 ? "bg-success" : "bg-danger") shadow-sm">
+                    Orçamento Restante: @ViewBag.OrcamentoRestante.ToString("C")
+                </div>
+            }
+        </div>
+
+        @if (TempData["Erro"] != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["Erro"]
+            </div>
+        }
+
+        <form asp-action="Manter" id="formEventoItem" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EventoId" />
+            
+            <input type="hidden" id="ValorBanco" name="Valor" value="" />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">1. Categoria</label>
+                    <select id="CategoriaSelect" class="form-select" asp-items="ViewBag.CategoriasList" onchange="filtrarProdutos()">
+                        <option value="">-- Todas --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">2. Produto / Serviço (Fornecedor)*</label>
+                    <select asp-for="ProdutoId" id="ProdutoSelect" class="form-select" required onchange="calcularValorFinal()">
+                        <option value="">Primeiro selecione a categoria...</option>
+                        
+                        @if (ViewBag.ProdutosCompletos != null)
+                        {
+                            foreach (var item in ViewBag.ProdutosCompletos)
+                            {
+                                <option value="@item.Id" data-categoria="@item.CategoriaId" data-valor="@item.PrecoVenda" data-unidade="@item.Unidade" style="display:none;">
+                                    @item.NomeProduto - @item.NomeFornecedor
+                                </option>
+                            }
+                        }
+                    </select>
+                    <div class="invalid-feedback">Selecione o produto/serviço.</div>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Nome de Exibição / Descrição (Opcional)</label>
+                    <input asp-for="NomeExibicao" class="form-control" placeholder="Ex: Banda Principal, Jantar Completo..." />
+                </div>
+
+               <div class="col-md-4">
+                    <label id="lblQuantidade" class="form-label">Quantidade*</label>
+                    <input asp-for="Quantidade" id="QuantidadeInput" type="number" class="form-control" required min="1" oninput="calcularValorFinal()" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Valor Final (R$)*</label>
+                    <input type="text" id="ValorVisivel" class="form-control mascara-moeda" required placeholder="0,00" />
+                    <div class="invalid-feedback">O valor é obrigatório.</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Status do Serviço</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="Pendente">Pendente</option>
+                        <option value="Concluído">Concluído</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                </div>
+
+            <div class="mt-5 d-flex gap-2">
+                <button type="submit" class="btn btn-planeja-primary px-5 py-2 shadow-sm">
+                    <i class="fa-solid fa-save me-2"></i> Salvar
+                </button>
+                <a asp-controller="Eventos" asp-action="Detalhes" asp-route-id="@Model.EventoId" class="btn btn-planeja-outline px-4 py-2">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function formatarDinheiro(valorNumerico) {
+        let v = (valorNumerico).toFixed(2);
+        v = v.replace('.', ',');
+        v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+        return v;
+    }
+
+    function calcularValorFinal() {
+        var select = document.getElementById('ProdutoSelect');
+        if(select.selectedIndex === -1) return;
+        
+        var optionSelecionada = select.options[select.selectedIndex];
+        
+        var unidadeStr = optionSelecionada.getAttribute('data-unidade');
+        var lblQuantidade = document.getElementById('lblQuantidade');
+        if (unidadeStr && unidadeStr.trim() !== "" && select.value !== "") {
+            lblQuantidade.innerText = 'Quantidade (' + unidadeStr + ')*';
+        } else {
+            lblQuantidade.innerText = 'Quantidade*';
+        }
+
+        var valorUnitarioStr = optionSelecionada.getAttribute('data-valor');
+        if (valorUnitarioStr && select.value !== "") {
+            var valorUnitario = parseFloat(valorUnitarioStr.replace(',', '.'));
+            var qtde = parseInt(document.getElementById('QuantidadeInput').value || 1);
+            
+            var total = valorUnitario * qtde;
+            
+            var textoFormatado = formatarDinheiro(total);
+            document.getElementById('ValorVisivel').value = textoFormatado;
+            document.getElementById('ValorBanco').value = textoFormatado; 
+        }
+    }
+
+    document.getElementById('ValorVisivel').addEventListener('input', function (e) {
+        let valor = e.target.value.replace(/\D/g, ''); 
+        if (valor === '') {
+            e.target.value = '';
+            document.getElementById('ValorBanco').value = '';
+            return;
+        }
+        
+        let valorFormatado = formatarDinheiro(parseInt(valor, 10) / 100);
+        e.target.value = valorFormatado;
+        document.getElementById('ValorBanco').value = valorFormatado; 
+    });
+
+    function filtrarProdutos() {
+        var categoriaId = document.getElementById('CategoriaSelect').value;
+        var produtoSelect = document.getElementById('ProdutoSelect');
+        var options = produtoSelect.querySelectorAll('option');
+        
+        produtoSelect.value = "";
+        document.getElementById('ValorVisivel').value = "";
+        document.getElementById('ValorBanco').value = "";
+        document.getElementById('lblQuantidade').innerText = 'Quantidade*';
+
+        options.forEach(function(opt) {
+            if(opt.value === "") {
+                opt.text = categoriaId ? "Selecione um produto/serviço..." : "Primeiro selecione a categoria...";
+                opt.style.display = ''; 
+                return;
+            }
+
+            var catOpt = opt.getAttribute('data-categoria');
+            if(categoriaId && catOpt === categoriaId) {
+                opt.style.display = '';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var valorAtualStr = "@(Model.Valor.ToString(System.Globalization.CultureInfo.InvariantCulture))";
+        var valorAtual = parseFloat(valorAtualStr);
+        
+        if(!isNaN(valorAtual) && valorAtual > 0) {
+            var formatado = formatarDinheiro(valorAtual);
+            document.getElementById('ValorVisivel').value = formatado;
+            document.getElementById('ValorBanco').value = formatado;
+            setTimeout(calcularValorFinal, 100); 
+        }
+
+        var form = document.getElementById('formEventoItem');
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>

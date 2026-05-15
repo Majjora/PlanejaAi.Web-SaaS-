@@ -1,0 +1,792 @@
+﻿@model PlanejaAi.Models.Evento
+
+@{
+    ViewData["Title"] = "Detalhes do Evento";
+    
+    decimal custoLocal = 0m;
+    if (Model.LocalTipo == 1)
+    {
+        custoLocal = Model.ValorLocalProprio;
+    }
+    else if (Model.LocalTipo == 2 && Model.ProdutoLocal != null)
+    {
+        custoLocal = Model.ProdutoLocal.ValorPadrao ?? 0m;
+    }
+
+    decimal totalGasto = custoLocal; 
+    
+    if (Model.EventoItens != null && Model.EventoItens.Any())
+    {
+        totalGasto += Model.EventoItens
+        .Where(i => i.Status != "Cancelado")
+        .Sum(i => i.Valor);
+    }
+    
+    decimal saldoDisponivel = Model.ValorTotalOrcamento - totalGasto;
+    
+    string corSaldo = saldoDisponivel >= 0 ? "text-success" : "text-danger";
+}
+
+<style>
+    :root {
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
+    }
+
+    body {
+        background-color: var(--cor-bege);
+        color: var(--cor-escura);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura);
+        color: var(--cor-bege);
+    }
+
+    [data-theme="dark"] .text-muted {
+        color: rgba(234, 224, 207, 0.7) !important;
+    }
+
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        padding: 20px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media);
+        color: #ffffff;
+    }
+
+    .texto-primario {
+        color: var(--cor-media);
+    }
+
+    [data-theme="dark"] .texto-primario {
+        color: var(--cor-bege);
+    }
+
+    .info-box {
+        background-color: rgba(33, 52, 72, 0.05);
+        border: 1px solid transparent;
+        color: var(--cor-escura);
+        border-radius: 8px;
+        padding: 15px;
+        height: 100%;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    [data-theme="dark"] .info-box {
+        background-color: var(--cor-escura);
+        border-color: var(--cor-escura);
+        color: #ffffff;
+    }
+
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+        transition: all 0.3s ease; 
+    }
+
+    .btn-planeja-primary:hover {
+        background-color: var(--cor-escura);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+    [data-theme="dark"] .btn-planeja-primary:hover {
+        background-color: #ffffff;
+        color: var(--cor-escura);
+    }
+
+    .btn-planeja-outline {
+        border: 1px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: 500;
+        background-color: transparent;
+        transition: all 0.3s ease; 
+    }
+
+    .btn-planeja-outline:hover {
+        background-color: var(--cor-media);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border-color: var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+        background-color: var(--cor-bege);
+        color: var(--cor-escura);
+    }
+
+    .dash-valor { font-size: 1.8rem; font-weight: 800; margin-top: 5px; }
+    
+    [data-theme="dark"] .dash-valor:not(.text-success):not(.text-danger):not(.text-warning) { 
+        color: #ffffff !important; 
+    }
+
+    .thead-planeja { background-color: rgba(33, 52, 72, 0.05); }
+    .thead-planeja th { color: var(--cor-media); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
+    
+    [data-theme="dark"] .thead-planeja th { color: var(--cor-bege); }
+    
+    .table tbody td { color: inherit; vertical-align: middle; }
+    
+    .linha-destaque { background-color: rgba(84, 119, 146, 0.05); }
+    [data-theme="dark"] .linha-destaque { background-color: rgba(0, 0, 0, 0.15); }
+
+    [data-theme="dark"] .table-hover tbody tr:hover td { color: #ffffff; }
+
+    .table-warning td { background-color: rgba(243, 156, 18, 0.15) !important; }
+    .table-success td { background-color: rgba(46, 204, 113, 0.15) !important; }
+    .table-danger td { background-color: rgba(231, 76, 60, 0.15) !important; }
+    
+    [data-theme="dark"] .table-warning td { background-color: rgba(243, 156, 18, 0.25) !important; color: #fff !important; }
+    [data-theme="dark"] .table-success td { background-color: rgba(46, 204, 113, 0.25) !important; color: #fff !important; }
+    [data-theme="dark"] .table-danger td { background-color: rgba(231, 76, 60, 0.25) !important; color: #fff !important; }
+
+    .item-checklist {
+        background-color: rgba(33, 52, 72, 0.03);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    [data-theme="dark"] .item-checklist {
+        background-color: rgba(0,0,0, 0.15);
+    }
+    .tarefa-concluida .texto-tarefa {
+        text-decoration: line-through;
+        opacity: 0.5;
+    }
+
+[data-theme="dark"] .text-muted, 
+[data-theme="dark"] .text-secondary {
+    color: #adb5bd !important; 
+}
+
+[data-theme="dark"] .text-primary {
+    color: #6ea8fe !important; 
+}
+
+    .checklist-fab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 65px;
+        height: 65px;
+        background-color: var(--cor-media);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(84, 119, 146, 0.4);
+        z-index: 1000;
+        transition: transform 0.3s, background-color 0.3s;
+    }
+
+    .checklist-fab:hover {
+        transform: scale(1.1);
+    }
+
+    [data-theme="dark"] .checklist-fab {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .offcanvas-theme {
+        background-color: var(--cor-bege); 
+        color: var(--cor-escura);
+        border-left: 1px solid rgba(84, 119, 146, 0.2);
+    }
+
+    [data-theme="dark"] .offcanvas-theme {
+        background-color: var(--cor-media);
+        color: #ffffff;
+        border-left: 1px solid var(--cor-escura);
+    }
+
+    .offcanvas-header-theme {
+        border-bottom: 1px solid rgba(84, 119, 146, 0.2);
+    }
+
+    [data-theme="dark"] .offcanvas-header-theme {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="dark"] .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    .input-checklist {
+        background-color: #ffffff !important;
+        color: var(--cor-escura) !important;
+    }
+    .input-checklist::placeholder {
+        color: rgba(33, 52, 72, 0.6) !important;
+    }
+
+    .btn-add-tarefa {
+        background-color: var(--cor-media);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    .btn-add-tarefa:hover {
+        background-color: var(--cor-escura);
+        color: white;
+    }
+
+[data-theme="dark"] .input-checklist {
+    background-color: #172533 !important; 
+    color: var(--cor-bege) !important;    
+}
+    [data-theme="dark"] .input-checklist::placeholder {
+        color: rgba(234, 224, 207, 0.5) !important;
+    }
+
+   [data-theme="dark"] .btn-add-tarefa {
+    background-color: var(--cor-clara) !important;
+    color: var(--cor-escura) !important; 
+    border: none !important; 
+}
+[data-theme="dark"] .btn-add-tarefa:hover {
+    background-color: #ffffff !important;
+    color: var(--cor-escura) !important;
+}
+
+</style>
+
+<div class="container mt-4 mb-5">
+    
+    <div class="card-planeja mb-4">
+        <div class="card-body p-2 p-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center texto-primario">
+                    <i class="fa-solid fa-calendar-check fs-3 me-3"></i>
+                    <div>
+                        <h2 class="mb-0 fw-bold">@Model.Nome</h2>
+                        <p class="text-muted m-0 small mt-1">
+                            <i class="fa-regular fa-user me-1"></i> Cliente: @(Model.Cliente?.Nome ?? "Não informado") | 
+                            <i class="fa-regular fa-calendar me-1"></i> Data: @Model.DataEvento.ToString("dd/MM/yyyy")
+                        </p>
+                        <p class="text-muted m-0 small mt-1">
+                            <i class="fa-solid fa-users me-1"></i> Convidados: @(Model.NumeroConvidados?.ToString() ?? "Não informado") | 
+                            <i class="fa-solid fa-eye me-1"></i> Privacidade: @(Model.Privacidade ?? "Não informado")
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 align-items-center">
+                    @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
+                    {
+                        <form asp-action="AlterarStatus" asp-controller="Eventos" method="post" class="d-inline form-status">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="novoStatus" value="Concluído" />
+                            <button type="submit" class="btn btn-success px-3 shadow-sm btn-concluir">
+                                <i class="fa-solid fa-check-double me-2"></i>Concluir
+                            </button>
+                        </form>
+
+                        <form asp-action="AlterarStatus" asp-controller="Eventos" method="post" class="d-inline form-status">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="novoStatus" value="Cancelado" />
+                            <button type="submit" class="btn btn-danger px-3 shadow-sm btn-cancelar">
+                                <i class="fa-solid fa-ban me-2"></i>Cancelar
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary fs-6 p-2 shadow-sm">
+                            <i class="fa-solid fa-lock me-2"></i>Evento @Model.Status
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <hr class="text-muted mb-4" />
+
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="info-box">
+                        <label class="fw-bold texto-primario text-uppercase small mb-1">Orçamento Total</label>
+                        <div class="dash-valor" style="color: var(--cor-media);">@Model.ValorTotalOrcamento.ToString("C")</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="info-box" style="border-left: 4px solid #f39c12;">
+                        <label class="fw-bold texto-primario text-uppercase small mb-1">Total de Gastos</label>
+                        <div class="dash-valor text-warning">@totalGasto.ToString("C")</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-box" style="border-left: 4px solid @(saldoDisponivel >= 0 ? "#2ecc71" : "#e74c3c");">
+                        <label class="fw-bold texto-primario text-uppercase small mb-1">Saldo Disponível</label>
+                        <div class="dash-valor @corSaldo">@saldoDisponivel.ToString("C")</div>
+                        @if (saldoDisponivel < 0)
+                        {
+                            <small class="text-danger fw-bold mt-1 d-block"><i class="fa-solid fa-triangle-exclamation"></i> Orçamento Estourado</small>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+                <a asp-action="Index" class="btn btn-planeja-outline px-4 py-2">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Voltar
+                </a>
+                @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
+                {
+                    <a asp-action="Manter" asp-route-id="@Model.Id" class="btn btn-planeja-primary px-4 py-2">
+                        <i class="fa-solid fa-pen me-2"></i> Editar este evento
+                    </a>
+                }
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card-planeja mb-4">
+        <div class="card-body p-2 p-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="texto-primario text-uppercase fw-bold m-0"><i class="fa-solid fa-boxes-packing me-2"></i>Itens e Fornecedores do Evento</h5>
+                @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
+                {
+                    <a asp-controller="EventoItens" asp-action="Manter" asp-route-eventoId="@Model.Id" class="btn btn-sm btn-planeja-primary px-3">
+                        <i class="fa-solid fa-plus me-1"></i> Adicionar Item
+                    </a>
+                }
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="thead-planeja">
+                        <tr>
+                            <th class="ps-4 border-0">Descrição</th>
+                            <th class="border-0">Categoria</th>
+                            <th class="border-0">Valor</th>
+                            <th class="border-0">Status</th>
+                            <th class="text-end pe-4 border-0">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.LocalTipo == 1 && Model.ValorLocalProprio > 0)
+                        {
+                            <tr class="linha-destaque">
+                                <td class="ps-4 fw-bold">Local Próprio: @(string.IsNullOrEmpty(Model.NomeLocalProprio) ? "Sede" : Model.NomeLocalProprio)</td>
+                                <td><span class="badge bg-secondary">Infraestrutura</span></td>
+                                <td class="fw-bold">@Model.ValorLocalProprio.ToString("C")</td>
+                                <td><span class="badge bg-success">Fixo do Evento</span></td>
+                                <td class="text-end pe-4">
+                                    <span class="text-muted small fst-italic">Ajustado na edição</span>
+                                </td>
+                            </tr>
+                        }
+                        else if (Model.LocalTipo == 2 && Model.ProdutoLocal != null)
+                        {
+                            <tr class="linha-destaque">
+                                <td class="ps-4 fw-bold">Local Alugado: @Model.ProdutoLocal.Nome</td>
+                                <td><span class="badge bg-secondary">Infraestrutura</span></td>
+                                <td class="fw-bold">@((Model.ProdutoLocal.ValorPadrao ?? 0m).ToString("C"))</td>
+                                <td><span class="badge bg-success">Fixo do Evento</span></td>
+                                <td class="text-end pe-4">
+                                    <span class="text-muted small fst-italic">Ajustado na edição</span>
+                                </td>
+                            </tr>
+                        }
+
+                        @if ((Model.EventoItens == null || !Model.EventoItens.Any()) && custoLocal == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted fst-italic border-0">
+                                    Nenhum item ou fornecedor cadastrado para este evento ainda.
+                                </td>
+                            </tr>
+                        }
+                        else if (Model.EventoItens != null)
+                        {
+                            foreach (var item in Model.EventoItens)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@item.Descricao</td>
+                                    <td><span class="badge bg-secondary">@item.Categoria</span></td> 
+                                    <td>@item.Valor.ToString("C")</td>
+                                    <td>
+                                        @switch (item.Status)
+                                        {
+                                            case "Concluído":
+                                                <span class="badge bg-success">Concluído</span>
+                                                break;
+                                            case "Cancelado":
+                                                <span class="badge bg-danger">Cancelado</span>
+                                                break;
+                                            case "Pendente":
+                                            default:
+                                                <span class="badge bg-warning text-dark">Pendente</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
+                                        {
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <a asp-controller="EventoItens" asp-action="Manter" asp-route-id="@item.Id" asp-route-eventoId="@Model.Id" class="btn btn-sm text-info" title="Editar Item">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </a>
+
+                                                @if (User.IsInRole("owner") || User.IsInRole("admin"))
+                                                {
+                                                    <form asp-controller="EventoItens" asp-action="Deletar" asp-route-id="@item.Id" method="post" class="d-inline form-excluir">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="eventoId" value="@Model.Id" />
+                                                        <button type="submit" class="btn btn-sm text-danger btn-excluir border-0 bg-transparent" data-nome="@item.Descricao" title="Excluir Item">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small fst-italic">
+                                                <i class="fa-solid fa-lock me-1"></i>Leitura
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="checklist-fab border-0" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChecklist" aria-controls="offcanvasChecklist" title="Abrir Checklist">
+        <i class="fa-solid fa-list-check"></i>
+    </button>
+
+    <div class="offcanvas offcanvas-end offcanvas-theme shadow-lg" tabindex="-1" id="offcanvasChecklist" aria-labelledby="offcanvasChecklistLabel">
+        <div class="offcanvas-header offcanvas-header-theme py-4">
+            <h5 class="offcanvas-title fw-bold texto-primario text-uppercase m-0" id="offcanvasChecklistLabel">
+                <i class="fa-solid fa-list-check me-2"></i> Checklist
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        
+        <div class="offcanvas-body">
+            
+            @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
+            {
+                <form asp-action="AdicionarChecklist" asp-controller="Eventos" method="post" class="mb-4" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="EventoId" value="@Model.Id" />
+                    <div class="input-group shadow-sm border-0 rounded overflow-hidden">
+                        <input type="text" name="Descricao" class="form-control border-0 input-checklist" placeholder="Nova tarefa..." required autocomplete="off" />
+                        <button type="submit" class="btn btn-add-tarefa px-3 border-0"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </form>
+            }
+
+            <form id="antiForgeryForm" style="display:none;">@Html.AntiForgeryToken()</form>
+
+            <ul class="list-unstyled mb-0" id="lista-checklist">
+                @if (Model.Checklists != null && Model.Checklists.Any())
+                {
+                    foreach (var tarefa in Model.Checklists.OrderBy(c => c.Concluido).ThenByDescending(c => c.Id))
+                    {
+                        <li class="item-checklist d-flex justify-content-between align-items-center p-3 mb-2 @(tarefa.Concluido ? "tarefa-concluida" : "")" data-id="@tarefa.Id">
+                            <div class="d-flex align-items-center gap-3">
+                                <input class="form-check-input fs-5 mt-0 chk-tarefa" type="checkbox" @(tarefa.Concluido ? "checked" : "") @(Model.Status != "Em Planejamento" && Model.Status != "Ativo" ? "disabled" : "") style="cursor: pointer;">
+                                <span class="texto-tarefa fw-bold">@tarefa.Descricao</span>
+                            </div>
+
+                            @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
+                            {
+                                <form asp-action="DeletarChecklist" asp-controller="Eventos" method="post" class="m-0 form-excluir-tarefa">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@tarefa.Id" />
+                                    <input type="hidden" name="eventoId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-link text-danger p-0 m-0 btn-excluir-tarefa text-decoration-none" data-nome="@tarefa.Descricao" title="Remover tarefa">
+                                        <i class="fa-solid fa-xmark fs-5"></i>
+                                    </button>
+                                </form>
+                            }
+                        </li>
+                    }
+                }
+                else
+                {
+                    <div class="text-center mt-5 text-muted">
+                        <i class="fa-regular fa-clipboard fs-1 mb-3 opacity-50"></i>
+                        <p><em>Nenhuma tarefa pendente neste evento.</em></p>
+                    </div>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="card-planeja mb-4">
+        <div class="card-body p-2 p-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="texto-primario text-uppercase fw-bold m-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Histórico de Movimentações</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="thead-planeja">
+                        <tr>
+                            <th class="ps-4 border-0">Data / Hora</th>
+                            <th class="border-0">Descrição da Movimentação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.Logs != null && ViewBag.Logs.Count > 0)
+                        {
+                            foreach (var log in ViewBag.Logs)
+                            {
+                                string classeLinha = "";
+
+                                if (log.Descricao.Contains("'Pendente'"))
+                                {
+                                    classeLinha = "table-warning";
+                                }
+                                else if (log.Descricao.Contains("'Concluído'"))
+                                {
+                                    classeLinha = "table-success";
+                                }
+                                else if (log.Descricao.Contains("'Cancelado'") || log.Descricao.Contains("excluído") || log.Descricao.Contains("removido"))
+                                {
+                                    classeLinha = "table-danger";
+                                }
+
+                                <tr class="@classeLinha">
+                                    <td class="ps-4 text-muted small border-0" style="width: 200px;">
+                                        @log.Data.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    <td class="border-0">
+                                        @if (log.Descricao.Contains("adicionado") || log.Descricao.Contains("criado") || log.Descricao.Contains("Nova tarefa"))
+                                        {
+                                            <i class="fa-solid fa-circle-plus text-primary me-2"></i>
+                                        }
+                                        else if (log.Descricao.Contains("excluído") || log.Descricao.Contains("removido"))
+                                        {
+                                            <i class="fa-solid fa-trash-can text-danger me-2"></i>
+                                        }
+                                        else if (log.Descricao.Contains("editado") || log.Descricao.Contains("atualizadas") || log.Descricao.Contains("marcada como"))
+                                        {
+                                            <i class="fa-solid fa-pen-to-square text-info me-2"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fa-solid fa-info-circle text-secondary me-2"></i>
+                                        }
+                                        <span class="fw-bold">@log.Descricao</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="2" class="text-center py-4 text-muted fst-italic border-0">
+                                    Nenhuma movimentação registrada para este evento ainda.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        if (sessionStorage.getItem('abrirChecklist') === 'true') {
+            const offcanvasElement = document.getElementById('offcanvasChecklist');
+            if (offcanvasElement) {
+                const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+                bsOffcanvas.show();
+            }
+            sessionStorage.removeItem('abrirChecklist');
+        }
+
+        const formAdicionarChecklist = document.querySelector('form[action*="AdicionarChecklist"]');
+        if (formAdicionarChecklist) {
+            formAdicionarChecklist.addEventListener('submit', function(e) {
+                const inputTarefa = this.querySelector('input[name="Descricao"]');
+                
+                if (!inputTarefa.value.trim()) {
+                    e.preventDefault(); 
+                    
+                    const themeColors = getSwalColors();
+                    Swal.fire({
+                        title: 'Atenção!',
+                        text: 'A descrição da tarefa não pode ficar vazia.',
+                        icon: 'warning',
+                        background: themeColors.background,
+                        color: themeColors.color,
+                        confirmButtonColor: themeColors.confirm
+                    });
+                } else {
+                    sessionStorage.setItem('abrirChecklist', 'true');
+                }
+            });
+        }
+        
+        function getSwalColors() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                background: isDark ? '#213448' : '#ffffff',
+                color: isDark ? '#EAE0CF' : '#213448',
+                confirm: '#dc3545',
+                cancel: '#547792'
+            };
+        }
+
+        document.querySelectorAll('.form-excluir').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault(); 
+                const btn = this.querySelector('.btn-excluir');
+                const nome = btn.getAttribute('data-nome');
+                const themeColors = getSwalColors();
+
+                Swal.fire({
+                    title: 'Excluir Item?',
+                    text: `Deseja remover o item "${nome}" deste evento?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    background: themeColors.background,
+                    color: themeColors.color,
+                    confirmButtonColor: themeColors.confirm,
+                    cancelButtonColor: themeColors.cancel,
+                    confirmButtonText: 'Sim, excluir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) { HTMLFormElement.prototype.submit.call(this); }
+                });
+            });
+        });
+
+        document.querySelectorAll('.form-excluir-tarefa').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault(); 
+                const btn = this.querySelector('.btn-excluir-tarefa');
+                const nome = btn.getAttribute('data-nome');
+                const themeColors = getSwalColors();
+
+                Swal.fire({
+                    title: 'Excluir Tarefa?',
+                    text: `Deseja remover "${nome}" do seu checklist?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    background: themeColors.background,
+                    color: themeColors.color,
+                    confirmButtonColor: themeColors.confirm,
+                    cancelButtonColor: themeColors.cancel,
+                    confirmButtonText: 'Sim, excluir',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) { 
+                        sessionStorage.setItem('abrirChecklist', 'true');
+                        
+                        HTMLFormElement.prototype.submit.call(this); 
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.chk-tarefa').forEach(chk => {
+            chk.addEventListener('change', function() {
+                const li = this.closest('li');
+                const id = li.getAttribute('data-id');
+                const concluido = this.checked;
+
+                if (concluido) {
+                    li.classList.add('tarefa-concluida');
+                } else {
+                    li.classList.remove('tarefa-concluida');
+                }
+
+                const formToken = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]');
+                const token = formToken ? formToken.value : '';
+
+                fetch('/Eventos/AtualizarStatusChecklist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: `id=${id}&concluido=${concluido}`
+                }).then(response => {
+                    if (!response.ok) {
+                        this.checked = !concluido;
+                        if (!concluido) {
+                            li.classList.add('tarefa-concluida');
+                        } else {
+                            li.classList.remove('tarefa-concluida');
+                        }
+                    }
+                }).catch(error => {
+                    console.error("Erro ao atualizar tarefa: ", error);
+                });
+            });
+        });
+
+    });
+</script>
+
+                        @if (TempData["Sucesso"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeColors = getSwalColors(); // Aproveitando sua função de cores dinâmicas
+            
+            Swal.fire({
+                title: 'Sucesso!',
+                text: '@Html.Raw(TempData["Sucesso"])',
+                icon: 'success',
+                background: themeColors.background,
+                color: themeColors.color,
+                confirmButtonColor: themeColors.confirm
+            });
+        });
+    </script>
+}
+
+@if (TempData["Erro"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeColors = getSwalColors();
+            
+            Swal.fire({
+                title: 'Oops!',
+                text: '@Html.Raw(TempData["Erro"])',
+                icon: 'error',
+                background: themeColors.background,
+                color: themeColors.color,
+                confirmButtonColor: themeColors.confirm
+            });
+        });
+    </script>
+}

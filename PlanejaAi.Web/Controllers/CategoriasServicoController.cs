@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PlanejaAi.Data;
 using PlanejaAi.Models;
-using System; 
+using System;
 using System.Security.Claims;
 
 namespace PlanejaAi.Controllers
@@ -25,7 +25,7 @@ namespace PlanejaAi.Controllers
         public async Task<IActionResult> Index()
         {
             var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
-            var isOwner = User.IsInRole("owner"); 
+            var isOwner = User.IsInRole("owner");
 
             IQueryable<CategoriaServico> query = _context.CategoriasServico.Include(c => c.Empresa);
 
@@ -174,7 +174,7 @@ namespace PlanejaAi.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "owner,admin")] 
+        [Authorize(Roles = "owner,admin")]
         public async Task<IActionResult> Deletar(int id)
         {
             var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
@@ -213,7 +213,7 @@ namespace PlanejaAi.Controllers
                     Usuario = User.Identity?.Name ?? "Desconhecido",
                     Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
                     Data = DateTime.Now,
-                    EmpresaId = empIdLogado 
+                    EmpresaId = empIdLogado
                 });
 
                 await _context.SaveChangesAsync();

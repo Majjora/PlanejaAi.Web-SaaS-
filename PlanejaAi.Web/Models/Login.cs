@@ -22,12 +22,12 @@ namespace PlanejaAi.Models
         public int? EmpresaId { get; set; }
 
         [Column("perfil_acesso")]
-        public string? PerfilAcesso { get; set; } 
+        public string? PerfilAcesso { get; set; }
 
         [Column("login_token")]
-        public string? Token { get; set; } 
+        public string? Token { get; set; }
 
-        
+
         [ForeignKey("FuncionarioId")]
         public virtual Funcionario? Funcionario { get; set; }
 

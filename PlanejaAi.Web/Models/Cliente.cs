@@ -11,7 +11,7 @@ namespace PlanejaAi.Models
         [Column("clien_id")]
         public int Id { get; set; }
 
-        [Column("emp_id")] 
+        [Column("emp_id")]
         public int EmpresaId { get; set; }
 
         [Column("clien_nome")]

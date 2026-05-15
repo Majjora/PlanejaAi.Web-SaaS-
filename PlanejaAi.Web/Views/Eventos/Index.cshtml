@@ -1,4 +1,4 @@
-﻿@model IList<PlanejaAi.Models.Fornecedor>
+﻿@model IList<PlanejaAi.Models.Evento>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -112,8 +112,8 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="m-0 fw-bold" style="color: var(--cor-media);">Gestão de Fornecedores</h2>
-            <p class="text-muted m-0">Administre os fornecedores da sua empresa</p>
+            <h2 class="m-0 fw-bold" style="color: var(--cor-media);">Gestão de Eventos</h2>
+            <p class="text-muted m-0">Administre os eventos e orçamentos</p>
         </div>
 
         <div class="d-flex gap-2">
@@ -121,16 +121,8 @@
                 <i class="fa-solid fa-house me-2"></i>Início
             </a>
 
-            <a asp-controller="CategoriasServico" asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" title="Gerenciar Categorias de Serviço">
-                <i class="fa-solid fa-tags me-2"></i>Categorias
-            </a>
-
-            <a asp-controller="ProdutosFornecedor" asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
-                <i class="fa-solid fa-box me-2"></i>Produtos
-            </a>
-
-            <a asp-action="Criar" class="btn btn-planeja-primary btn-sm px-3 shadow-sm">
-                <i class="fa-solid fa-plus me-2"></i>Novo Fornecedor
+            <a asp-action="Manter" class="btn btn-planeja-primary btn-sm px-3 shadow-sm">
+                <i class="fa-solid fa-plus me-2"></i>Novo Evento
             </a>
         </div>
     </div>
@@ -141,7 +133,7 @@
                 <span class="input-group-text border-0" style="background-color: var(--cor-media); color: white;">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-                <input type="text" id="inputBusca" name="busca" class="form-control" placeholder="Buscar por nome ou e-mail..." value="@ViewData["FiltroAtual"]">
+                <input type="text" id="inputBusca" name="busca" class="form-control" placeholder="Buscar por nome ou tipo..." value="@ViewData["FiltroAtual"]">
             </div>
             <button type="button" id="btnPesquisar" class="btn btn-planeja-primary px-4 shadow-sm">Pesquisar</button>
         </form>
@@ -152,8 +144,8 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="thead-planeja">
                     <tr>
-                        <th class="ps-4 border-0">Fornecedor</th>
-                        <th class="border-0">Contato</th>
+                        <th class="ps-4 border-0">Evento</th>
+                        <th class="border-0">Data</th>
                         <th class="border-0">Status</th>
                         <th class="text-end pe-4 border-0">Ações</th>
                     </tr>
@@ -162,7 +154,7 @@
                     @if (Model.Count == 0)
                     {
                         <tr>
-                            <td colspan="4" class="text-center py-5 text-muted fst-italic">Nenhum fornecedor cadastrado.</td>
+                            <td colspan="4" class="text-center py-5 text-muted fst-italic">Nenhum evento cadastrado.</td>
                         </tr>
                     }
                     @foreach (var item in Model)
@@ -170,9 +162,8 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="fw-bold">@item.Nome</div>
-                                <div class="text-muted small">Doc: @(item.CnpjCpf ?? "Não informado")</div>
-                                <small class="text-muted d-block">Cadastrado em: @item.DataCadastro.ToString("dd/MM/yyyy")</small>
-
+                                <div class="text-muted small">Tipo: @(string.IsNullOrEmpty(item.Tipo) ? "Não informado" : item.Tipo)</div>
+                                
                                 @if (User.IsInRole("owner"))
                                 {
                                     <div class="small mt-1 texto-identificador-empresa">
@@ -180,28 +171,33 @@
                                     </div>
                                 }
                             </td>
+                            
                             <td>
-                                <div><i class="fa-solid fa-envelope me-1"></i> @(item.Email ?? "Sem e-mail")</div>
-                                <small class="text-muted"><i class="fa-solid fa-phone me-1"></i> @(item.Telefone ?? "Sem telefone")</small>
+                                <div><i class="fa-regular fa-calendar me-1"></i> @item.DataEvento.ToString("dd/MM/yyyy")</div>
+                                <small class="text-muted fw-bold">Orçamento: @item.ValorTotalOrcamento.ToString("C")</small>
                             </td>
                             <td>
-                                @if (item.Status)
+                                @if (item.Status == "Ativo" || item.Status == "Concluído")
                                 {
-                                    <span class="badge bg-success">Ativo</span>
+                                    <span class="badge bg-success">@item.Status</span>
+                                }
+                                else if (item.Status == "Cancelado")
+                                {
+                                    <span class="badge bg-danger">@item.Status</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Inativo</span>
+                                    <span class="badge bg-warning text-dark">@item.Status</span>
                                 }
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-flex justify-content-end gap-2">
 
-                                    <a asp-controller="ProdutosFornecedor" asp-action="Index" asp-route-fornecedorId="@item.Id" class="btn btn-sm text-primary" title="Visualizar Produtos">
-                                        <i class="fa-solid fa-eye"></i>
+                                    <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm text-primary" title="Visualizar Orçamento">
+                                        <i class="fa-solid fa-list-check"></i>
                                     </a>
 
-                                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm text-info" title="Editar">
+                                    <a asp-action="Manter" asp-route-id="@item.Id" class="btn btn-sm text-info btn-editar" data-status="@item.Status" title="Editar">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
 
@@ -247,7 +243,7 @@
 
     Swal.fire({
     title: 'Excluir?',
-    text: `Deseja remover o fornecedor ${nome}?`,
+    text: `Deseja remover o evento ${nome}?`,
     icon: 'warning',
     showCancelButton: true,
     background: isDark ? '#213448' : '#ffffff',
@@ -259,6 +255,26 @@
     }).then((result) => {
     if (result.isConfirmed) { HTMLFormElement.prototype.submit.call(this); }
     });
+    });
+    });
+
+    document.querySelectorAll('.btn-editar').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+    const status = this.getAttribute('data-status');
+            
+    if (status === 'Concluído' || status === 'Cancelado') {
+    e.preventDefault();
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                
+    Swal.fire({
+    icon: 'warning',
+    title: 'Ação Bloqueada',
+    text: `Não é possível editar um evento que já está ${status}.`,
+    background: isDark ? '#213448' : '#ffffff',
+    color: isDark ? '#EAE0CF' : '#213448',
+    confirmButtonColor: '#547792'
+    });
+    }
     });
     });
 

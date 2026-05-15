@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace PlanejaAi.Controllers
 {
-    [Authorize] 
+    [Authorize]
     public class ProdutosFornecedorController : Controller
     {
         private readonly AppDbContext _context;

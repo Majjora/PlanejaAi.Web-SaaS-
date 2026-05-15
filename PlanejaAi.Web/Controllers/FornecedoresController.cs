@@ -25,7 +25,7 @@ namespace PlanejaAi.Controllers
             bool isOwner = User.IsInRole("owner") || User.IsInRole("Owner");
 
             var query = _context.Fornecedores
-                                .Include(f => f.Empresa) 
+                                .Include(f => f.Empresa)
                                 .AsNoTracking()
                                 .AsQueryable();
 

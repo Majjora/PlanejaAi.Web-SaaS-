@@ -25,7 +25,7 @@ namespace PlanejaAi.Models
         [Column("emp_id")]
         public int? EmpresaId { get; set; }
 
-        
+
         [ForeignKey("EmpresaId")]
         public virtual Empresa? Empresa { get; set; }
     }

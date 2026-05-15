@@ -24,7 +24,7 @@ namespace PlanejaAi.Controllers
             var perfil = User.FindFirstValue(ClaimTypes.Role);
             var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
 
-            
+
             var query = _context.Logins
                 .Include(l => l.Funcionario)
                 .Include(l => l.Empresa)
@@ -37,7 +37,7 @@ namespace PlanejaAi.Controllers
             return View(await query.ToListAsync());
         }
 
-        
+
         [HttpGet]
         public IActionResult Criar()
         {
@@ -142,7 +142,7 @@ namespace PlanejaAi.Controllers
 
             if (perfilLogado == "admin" && login.EmpresaId != empIdLogado)
             {
-                return RedirectToAction("Index", "Home"); 
+                return RedirectToAction("Index", "Home");
             }
 
             var model = new UsuariosViewModel
@@ -153,7 +153,7 @@ namespace PlanejaAi.Controllers
                 Cpf = login.Funcionario?.Cpf,
                 Cargo = login.Funcionario?.Cargo,
                 PerfilAcesso = login.PerfilAcesso,
-                EmpresaId = login.EmpresaId ?? 0 
+                EmpresaId = login.EmpresaId ?? 0
             };
 
             CarregarViewBags();
@@ -279,7 +279,7 @@ namespace PlanejaAi.Controllers
         [HttpGet]
         public async Task<IActionResult> Detalhes(int id)
         {
-            
+
             var login = await _context.Logins
                 .Include(l => l.Funcionario)
                 .Include(l => l.Empresa)
@@ -311,33 +311,33 @@ namespace PlanejaAi.Controllers
                 var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
                 var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
 
-               
+
                 var emailLogado = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? "";
 
-               
+
                 if (!string.IsNullOrEmpty(login.Email) && login.Email.Equals(emailLogado, StringComparison.OrdinalIgnoreCase))
                 {
                     TempData["Erro"] = "Não é possível excluir a sua própria conta ativa.";
                     return RedirectToAction(nameof(Index));
                 }
 
-                
+
                 if (!string.IsNullOrEmpty(login.PerfilAcesso) && login.PerfilAcesso.Equals("owner", StringComparison.OrdinalIgnoreCase))
                 {
                     TempData["Erro"] = "Contas com perfil de 'Owner' não podem ser excluídas do sistema.";
                     return RedirectToAction(nameof(Index));
                 }
 
-                
+
                 if (perfilLogado != null && perfilLogado.Equals("admin", StringComparison.OrdinalIgnoreCase))
                 {
-                    
+
                     if (login.EmpresaId != empIdLogado)
                     {
                         return RedirectToAction("Index", "Home");
                     }
 
-                    
+
                     if (login.PerfilAcesso == null || !login.PerfilAcesso.Equals("users", StringComparison.OrdinalIgnoreCase))
                     {
                         TempData["Erro"] = "Você não pode excluir um usuário com o mesmo nível de permissão que o seu.";
@@ -350,7 +350,7 @@ namespace PlanejaAi.Controllers
 
                 try
                 {
-                    
+
                     if (login.Funcionario != null)
                     {
                         _context.Funcionarios.Remove(login.Funcionario);
@@ -365,7 +365,7 @@ namespace PlanejaAi.Controllers
                 }
                 catch (Exception)
                 {
-                    
+
                     TempData["Erro"] = "Erro de exclusão: Este usuário possui vínculos importantes no sistema e não pôde ser excluído.";
                 }
             }
@@ -379,7 +379,7 @@ namespace PlanejaAi.Controllers
             var perfil = User.FindFirstValue(ClaimTypes.Role);
             ViewBag.PerfilLogado = perfil;
 
-            
+
             if (perfil == "owner")
             {
                 ViewBag.Empresas = _context.Empresas.AsNoTracking().ToList() ?? new List<Empresa>();
@@ -403,7 +403,7 @@ namespace PlanejaAi.Controllers
                 _context.Logs.Add(log);
                 await _context.SaveChangesAsync();
             }
-            catch {  }
+            catch { }
         }
     }
 }

@@ -253,8 +253,8 @@
     input.setCustomValidity('CNPJ Inválido');
     } else {
     input.setCustomValidity('');
+
           
-    
     buscarCnpj(doc);
     }
     } else {
@@ -273,8 +273,8 @@
     .then(dados => {
 
     document.getElementById('Nome').value = dados.razao_social;
-                
 
+                
     if (dados.ddd_telefone_1) {
     document.getElementById('Telefone').value = dados.ddd_telefone_1.replace(/\D/g, '');
     }

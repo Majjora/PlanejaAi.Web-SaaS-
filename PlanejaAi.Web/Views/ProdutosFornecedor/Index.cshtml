@@ -354,7 +354,7 @@
 
     linhasTabela.forEach(function (linha) {
     let primeiraCelula = linha.querySelector('td');
-    if (primeiraCelula && primeiraCelula.getAttribute('colspan')) return; 
+    if (primeiraCelula && primeiraCelula.getAttribute('colspan')) return;
 
     let textoDaLinha = linha.textContent.toLowerCase();
     linha.style.display = textoDaLinha.includes(textoBusca) ? '' : 'none';

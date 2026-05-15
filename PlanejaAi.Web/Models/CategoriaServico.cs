@@ -25,7 +25,7 @@ namespace PlanejaAi.Models
 
         public ICollection<ProdutoFornecedor> Produtos { get; set; }
 
-        [Column("cat_data_cadastro")] 
+        [Column("cat_data_cadastro")]
         public DateTime DataCadastro { get; set; } = DateTime.Now;
     }
 }

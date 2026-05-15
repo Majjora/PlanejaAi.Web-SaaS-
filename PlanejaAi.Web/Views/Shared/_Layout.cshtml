@@ -8,135 +8,135 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        :root {
-            --cor-escura: #213448;
-            --cor-media: #547792;
-            --cor-clara: #94B4C1;
-            --cor-bege: #EAE0CF;
-            --bg-fundo: #ffffff;
-            --texto-principal: var(--cor-escura);
-            --bg-navbar: rgba(255, 255, 255, 0.9);
-        }
-
-        [data-theme="dark"] {
-            --bg-fundo: var(--cor-escura);
-            --texto-principal: var(--cor-bege);
-            --bg-navbar: rgba(33, 52, 72, 0.9);
-        }
-
-        body {
-            background-color: var(--bg-fundo);
-            color: var(--texto-principal);
-            transition: background-color 0.3s ease;
-            margin: 0;
-            min-height: 100vh;
-        }
-
-
-        .custom-navbar {
-            background-color: var(--bg-navbar);
-            padding: 10px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1050;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: background-color 0.3s ease, padding 0.3s ease;
-        }
-
-
-        main {
-            padding-top: 80px;
-        }
-
-
-        .custom-logo-size {
-            height: 45px;
-            width: auto;
-        }
-
-        .logo-dark {
-            display: none;
-        }
-
-        [data-theme="dark"] .logo-light {
-            display: none;
-        }
-
-        [data-theme="dark"] .logo-dark {
-            display: block;
-        }
-
-
-        .theme-toggle-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            outline: none !important;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-        }
-
-            .theme-toggle-btn svg {
-                width: 22px;
-                height: 22px;
+            :root {
+                --cor-escura: #213448;
+                --cor-media: #547792;
+                --cor-clara: #94B4C1;
+                --cor-bege: #EAE0CF;
+                --bg-fundo: #ffffff;
+                --texto-principal: var(--cor-escura);
+                --bg-navbar: rgba(255, 255, 255, 0.9);
             }
 
-        .icon-sun, .icon-moon {
-            display: none;
-        }
-
-        html:not([data-theme="dark"]) .icon-sun {
-            display: block;
-            fill: var(--cor-escura);
-        }
-
-        html[data-theme="dark"] .icon-moon {
-            display: block;
-            fill: var(--cor-bege);
-        }
-
-        .nav-icon {
-            color: var(--texto-principal);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-            .nav-icon:hover {
-                transform: rotate(45deg);
+            [data-theme="dark"] {
+                --bg-fundo: var(--cor-escura);
+                --texto-principal: var(--cor-bege);
+                --bg-navbar: rgba(33, 52, 72, 0.9);
             }
 
-        .profile-img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--cor-media);
-            object-fit: cover;
-        }
+            body {
+                background-color: var(--bg-fundo);
+                color: var(--texto-principal);
+                transition: background-color 0.3s ease;
+                margin: 0;
+                min-height: 100vh;
+            }
 
 
-        .table {
-            color: var(--texto-principal) !important;
-        }
+            .custom-navbar {
+                background-color: var(--bg-navbar);
+                padding: 10px 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1050;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                transition: background-color 0.3s ease, padding 0.3s ease;
+            }
 
-        .thead-planeja {
-            background-color: var(--cor-escura);
-            color: var(--cor-bege);
-        }
 
-        .form-control, .form-select {
-            background-color: transparent;
-            border: 1px solid var(--cor-media);
-            color: var(--texto-principal);
-        }
+            main {
+                padding-top: 80px;
+            }
+
+
+            .custom-logo-size {
+                height: 45px;
+                width: auto;
+            }
+
+            .logo-dark {
+                display: none;
+            }
+
+            [data-theme="dark"] .logo-light {
+                display: none;
+            }
+
+            [data-theme="dark"] .logo-dark {
+                display: block;
+            }
+
+
+            .theme-toggle-btn {
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                outline: none !important;
+                padding: 5px;
+                display: flex;
+                align-items: center;
+            }
+
+                .theme-toggle-btn svg {
+                    width: 22px;
+                    height: 22px;
+                }
+
+            .icon-sun, .icon-moon {
+                display: none;
+            }
+
+            html:not([data-theme="dark"]) .icon-sun {
+                display: block;
+                fill: var(--cor-escura);
+            }
+
+            html[data-theme="dark"] .icon-moon {
+                display: block;
+                fill: var(--cor-bege);
+            }
+
+            .nav-icon {
+                color: var(--texto-principal);
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+                .nav-icon:hover {
+                    transform: rotate(45deg);
+                }
+
+            .profile-img {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 2px solid var(--cor-media);
+                object-fit: cover;
+            }
+
+
+            .table {
+                color: var(--texto-principal) !important;
+            }
+
+            .thead-planeja {
+                background-color: var(--cor-escura);
+                color: var(--cor-bege);
+            }
+
+            .form-control, .form-select {
+                background-color: transparent;
+                border: 1px solid var(--cor-media);
+                color: var(--texto-principal);
+            }
     </style>
 </head>
 <body>
@@ -168,23 +168,25 @@
     </main>
 
     <script>
-        const themeToggle = document.getElementById('themeToggle');
-        const htmlElement = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const htmlElement = document.documentElement;
 
-        function applyTheme(theme) {
-            htmlElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-        }
+            function applyTheme(theme) {
+                htmlElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            }
 
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        applyTheme(savedTheme);
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
 
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            applyTheme(newTheme);
-        });
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
     </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -11,9 +11,8 @@
         --p-bege: #EAE0CF;
         --p-escura: #213448;
         --p-media: #547792;
-        
-        --bg-body: var(--p-bege); 
-        --bg-card: #ffffff; 
+        --bg-body: var(--p-bege);
+        --bg-card: #ffffff;
         --text-main: var(--p-escura);
         --text-muted: var(--p-media);
         --accent: var(--p-media);
@@ -24,7 +23,7 @@
 
     [data-theme="dark"] {
         --bg-body: var(--p-escura);
-        --bg-card: var(--p-media); 
+        --bg-card: var(--p-media);
         --text-main: var(--p-bege);
         --text-muted: var(--p-bege);
         --accent: var(--p-bege);
@@ -167,23 +166,12 @@
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
-        
         <div class="col">
-            <a href="@Url.Action("Criar", "Eventos")">
-                <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                    <h5 class="card-title">Criar Evento</h5>
-                    <p class="card-text">Inicie um planejamento do zero.</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col">
-            <a href="@Url.Action("Listar", "Eventos")">
+            <a href="@Url.Action("Index", "Eventos")">
                 <div class="card-modulo">
                     <div class="icon-box"><i class="fa-solid fa-rectangle-list"></i></div>
-                    <h5 class="card-title">Gerenciar</h5>
-                    <p class="card-text">Acompanhe seus eventos ativos.</p>
+                    <h5 class="card-title">Gerenciar Eventos</h5>
+                    <p class="card-text">Visualize, crie e edite seus eventos ativos.</p>
                 </div>
             </a>
         </div>
