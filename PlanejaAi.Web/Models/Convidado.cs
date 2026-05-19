@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PlanejaAi.Models
@@ -16,16 +17,10 @@ namespace PlanejaAi.Models
         [Column("conv_nome")]
         public string Nome { get; set; }
 
-        [Column("conv_documento")]
-        public string? Documento { get; set; }
-
-        [Column("conv_token")]
-        public string? Token { get; set; }
-
         [Column("conv_confirmacao")]
         public int Confirmacao { get; set; } = 0;
 
-        [Column("conv_observacoes")]
-        public string? Observacoes { get; set; }
+        [Column("conv_data_cadastro")]
+        public DateTime DataCadastro { get; set; } = DateTime.Now;
     }
 }

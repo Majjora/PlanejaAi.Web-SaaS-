@@ -1,0 +1,143 @@
+﻿@model PlanejaAi.Models.Convidado
+
+@{
+    ViewData["Title"] = "Editar Convidado";
+}
+<style>
+    :root {
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
+    }
+
+    body {
+        background-color: var(--cor-bege) !important;
+        color: var(--cor-escura);
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura) !important;
+        color: var(--cor-bege);
+    }
+
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media) !important;
+        color: #ffffff;
+    }
+
+    .form-control, .form-select {
+        border-color: var(--cor-clara);
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--cor-media);
+            box-shadow: 0 0 0 0.2rem rgba(84, 119, 146, 0.25);
+        }
+
+    [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
+        background-color: var(--cor-escura);
+        color: #fff;
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+        .btn-planeja-primary:hover {
+            background-color: var(--cor-escura);
+            color: white;
+        }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+        [data-theme="dark"] .btn-planeja-primary:hover {
+            background-color: #ffffff;
+            color: var(--cor-escura);
+        }
+
+    .btn-planeja-outline {
+        border: 2px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border-color: var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+    .btn-planeja-outline:hover {
+        background-color: var(--cor-media);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-planeja-outline:hover {
+        background-color: var(--cor-bege);
+        color: var(--cor-escura);
+    }
+</style>
+
+<div class="container mt-5" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="m-0 fw-bold" style="color: var(--cor-media);">
+                Editar Convidado
+            </h2>
+            <p class="text-muted small">Gerenciando o convidado do evento: <strong>@ViewBag.EventoNome</strong>.</p>
+        </div>
+    </div>
+
+    <div class="card-planeja shadow-sm">
+        <form asp-action="EditarConvidado" method="post" novalidate>
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="hidden" name="eventoId" value="@Model.EventoId" />
+
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Nome do Convidado *</label>
+                    <input type="text" name="nome" value="@Model.Nome" class="form-control" placeholder="Ex: João da Silva" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Status de Confirmação *</label>
+                    <select name="status" class="form-select" required>
+                        <option value="0" selected="@(Model.Confirmacao == 0 ? "selected" : null)">Não Confirmado</option>
+                        <option value="1" selected="@(Model.Confirmacao == 1 ? "selected" : null)">Confirmado</option>
+                        <option value="2" selected="@(Model.Confirmacao == 2 ? "selected" : null)">Em Dúvida</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4" style="border-color: var(--cor-clara); opacity: 0.2;" />
+
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <button type="submit" class="btn btn-planeja-primary px-4 py-2 shadow-sm">
+                    <i class="fa-solid fa-save me-2"></i>
+                    Atualizar Alterações
+                </button>
+                <a asp-action="ListaConvidados" asp-route-id="@Model.EventoId" class="btn btn-planeja-outline px-4 py-2">
+                    <i class="fa-solid fa-xmark me-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

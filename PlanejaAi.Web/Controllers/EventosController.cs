@@ -414,5 +414,142 @@ namespace PlanejaAi.Controllers
             }
         }
 
+        [Authorize]
+        public IActionResult ListaConvidados(int id)
+        {
+            var evento = _context.Eventos.FirstOrDefault(e => e.Id == id);
+            if (evento == null) return NotFound();
+
+            var convidados = _context.Convidados
+                                     .Where(c => c.EventoId == id)
+                                     .OrderByDescending(c => c.Confirmacao)
+                                     .ThenBy(c => c.Nome)
+                                     .ToList();
+
+            ViewBag.EventoNome = evento.Nome;
+            ViewBag.EventoId = id;
+            ViewBag.EventoStatus = evento.Status;
+
+            return View(convidados);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdicionarConvidadoManual(int eventoId, string nome, int status)
+        {
+            if (!string.IsNullOrWhiteSpace(nome))
+            {
+                var novoConvidado = new Convidado
+                {
+                    EventoId = eventoId,
+                    Nome = nome,
+                    Confirmacao = status,
+                    DataCadastro = DateTime.Now
+                };
+
+                _context.Convidados.Add(novoConvidado);
+                await _context.SaveChangesAsync();
+                await RegistrarLog("CREATE", $"Convidado '{nome}' adicionado manualmente.", eventoId);
+
+                TempData["Sucesso"] = "Convidado adicionado com sucesso!";
+            }
+
+            return RedirectToAction("ListaConvidados", new { id = eventoId });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult EditarConvidado(int id)
+        {
+            var convidado = _context.Convidados.Find(id);
+            if (convidado == null) return NotFound();
+
+            var evento = _context.Eventos.Find(convidado.EventoId);
+            ViewBag.EventoNome = evento?.Nome ?? "Evento Desconhecido";
+
+            return View(convidado);
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarConvidado(int id, int eventoId, string nome, int status)
+        {
+            var convidado = await _context.Convidados.FindAsync(id);
+
+            if (convidado != null && !string.IsNullOrWhiteSpace(nome))
+            {
+                convidado.Nome = nome;
+                convidado.Confirmacao = status;
+
+                _context.Convidados.Update(convidado);
+                await _context.SaveChangesAsync();
+
+                await RegistrarLog("UPDATE", $"Convidado ID {id} ('{nome}') atualizado.", eventoId);
+
+                TempData["Sucesso"] = "Dados do convidado atualizados!";
+            }
+
+            return RedirectToAction("ListaConvidados", new { id = eventoId });
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Inscricao(int id)
+        {
+            var evento = _context.Eventos.FirstOrDefault(e => e.Id == id);
+            if (evento == null) return NotFound();
+
+            ViewBag.EventoNome = evento.Nome;
+            ViewBag.EventoId = id;
+
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmarPresenca(Convidado model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Nome))
+            {
+                return RedirectToAction("Inscricao", new { id = model.EventoId });
+            }
+
+            model.DataCadastro = DateTime.Now;
+
+            _context.Convidados.Add(model);
+            await _context.SaveChangesAsync();
+
+            await RegistrarLog("CREATE", $"Inscrição via link público recebida para '{model.Nome}'.", model.EventoId);
+
+            TempData["SucessoInscricao"] = "Sua resposta foi enviada com sucesso. Obrigado!";
+
+            return RedirectToAction("Inscricao", new { id = model.EventoId });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoverConvidado(int id, int eventoId)
+        {
+            var convidado = await _context.Convidados.FindAsync(id);
+
+            if (convidado != null)
+            {
+                string nomeExcluido = convidado.Nome;
+
+                _context.Convidados.Remove(convidado);
+                await _context.SaveChangesAsync();
+
+                await RegistrarLog("DELETE", $"Convidado ID {id} ('{nomeExcluido}') removido da lista.", eventoId);
+
+                TempData["Sucesso"] = "Convidado removido com sucesso!";
+            }
+
+            return RedirectToAction("ListaConvidados", new { id = eventoId });
+        }
     }
 }

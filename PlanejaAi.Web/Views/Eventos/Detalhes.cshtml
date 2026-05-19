@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Detalhes do Evento";
-    
+
     decimal custoLocal = 0m;
     if (Model.LocalTipo == 1)
     {
@@ -13,17 +13,17 @@
         custoLocal = Model.ProdutoLocal.ValorPadrao ?? 0m;
     }
 
-    decimal totalGasto = custoLocal; 
-    
+    decimal totalGasto = custoLocal;
+
     if (Model.EventoItens != null && Model.EventoItens.Any())
     {
         totalGasto += Model.EventoItens
         .Where(i => i.Status != "Cancelado")
         .Sum(i => i.Valor);
     }
-    
+
     decimal saldoDisponivel = Model.ValorTotalOrcamento - totalGasto;
-    
+
     string corSaldo = saldoDisponivel >= 0 ? "text-success" : "text-danger";
 }
 
@@ -93,94 +93,139 @@
         color: white;
         border: none;
         font-weight: bold;
-        transition: all 0.3s ease; 
+        transition: all 0.3s ease;
     }
 
-    .btn-planeja-primary:hover {
-        background-color: var(--cor-escura);
-        color: white;
-    }
+        .btn-planeja-primary:hover {
+            background-color: var(--cor-escura);
+            color: white;
+        }
 
     [data-theme="dark"] .btn-planeja-primary {
         background-color: var(--cor-clara);
         color: var(--cor-escura);
     }
 
-    [data-theme="dark"] .btn-planeja-primary:hover {
-        background-color: #ffffff;
-        color: var(--cor-escura);
-    }
+        [data-theme="dark"] .btn-planeja-primary:hover {
+            background-color: #ffffff;
+            color: var(--cor-escura);
+        }
 
     .btn-planeja-outline {
         border: 1px solid var(--cor-media);
         color: var(--cor-media);
         font-weight: 500;
         background-color: transparent;
-        transition: all 0.3s ease; 
+        transition: all 0.3s ease;
     }
 
-    .btn-planeja-outline:hover {
-        background-color: var(--cor-media);
-        color: white;
-    }
+        .btn-planeja-outline:hover {
+            background-color: var(--cor-media);
+            color: white;
+        }
 
     [data-theme="dark"] .btn-planeja-outline {
         border-color: var(--cor-bege);
         color: var(--cor-bege);
     }
 
-    [data-theme="dark"] .btn-planeja-outline:hover {
-        background-color: var(--cor-bege);
-        color: var(--cor-escura);
+        [data-theme="dark"] .btn-planeja-outline:hover {
+            background-color: var(--cor-bege);
+            color: var(--cor-escura);
+        }
+
+    .dash-valor {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-top: 5px;
     }
 
-    .dash-valor { font-size: 1.8rem; font-weight: 800; margin-top: 5px; }
-    
-    [data-theme="dark"] .dash-valor:not(.text-success):not(.text-danger):not(.text-warning) { 
-        color: #ffffff !important; 
+    [data-theme="dark"] .dash-valor:not(.text-success):not(.text-danger):not(.text-warning) {
+        color: #ffffff !important;
     }
 
-    .thead-planeja { background-color: rgba(33, 52, 72, 0.05); }
-    .thead-planeja th { color: var(--cor-media); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
-    
-    [data-theme="dark"] .thead-planeja th { color: var(--cor-bege); }
-    
-    .table tbody td { color: inherit; vertical-align: middle; }
-    
-    .linha-destaque { background-color: rgba(84, 119, 146, 0.05); }
-    [data-theme="dark"] .linha-destaque { background-color: rgba(0, 0, 0, 0.15); }
+    .thead-planeja {
+        background-color: rgba(33, 52, 72, 0.05);
+    }
 
-    [data-theme="dark"] .table-hover tbody tr:hover td { color: #ffffff; }
+        .thead-planeja th {
+            color: var(--cor-media);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
 
-    .table-warning td { background-color: rgba(243, 156, 18, 0.15) !important; }
-    .table-success td { background-color: rgba(46, 204, 113, 0.15) !important; }
-    .table-danger td { background-color: rgba(231, 76, 60, 0.15) !important; }
-    
-    [data-theme="dark"] .table-warning td { background-color: rgba(243, 156, 18, 0.25) !important; color: #fff !important; }
-    [data-theme="dark"] .table-success td { background-color: rgba(46, 204, 113, 0.25) !important; color: #fff !important; }
-    [data-theme="dark"] .table-danger td { background-color: rgba(231, 76, 60, 0.25) !important; color: #fff !important; }
+    [data-theme="dark"] .thead-planeja th {
+        color: var(--cor-bege);
+    }
+
+    .table tbody td {
+        color: inherit;
+        vertical-align: middle;
+    }
+
+    .linha-destaque {
+        background-color: rgba(84, 119, 146, 0.05);
+    }
+
+    [data-theme="dark"] .linha-destaque {
+        background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    [data-theme="dark"] .table-hover tbody tr:hover td {
+        color: #ffffff;
+    }
+
+    .table-warning td {
+        background-color: rgba(243, 156, 18, 0.15) !important;
+    }
+
+    .table-success td {
+        background-color: rgba(46, 204, 113, 0.15) !important;
+    }
+
+    .table-danger td {
+        background-color: rgba(231, 76, 60, 0.15) !important;
+    }
+
+    [data-theme="dark"] .table-warning td {
+        background-color: rgba(243, 156, 18, 0.25) !important;
+        color: #fff !important;
+    }
+
+    [data-theme="dark"] .table-success td {
+        background-color: rgba(46, 204, 113, 0.25) !important;
+        color: #fff !important;
+    }
+
+    [data-theme="dark"] .table-danger td {
+        background-color: rgba(231, 76, 60, 0.25) !important;
+        color: #fff !important;
+    }
 
     .item-checklist {
         background-color: rgba(33, 52, 72, 0.03);
         border-radius: 8px;
         transition: all 0.2s ease;
     }
+
     [data-theme="dark"] .item-checklist {
         background-color: rgba(0,0,0, 0.15);
     }
+
     .tarefa-concluida .texto-tarefa {
         text-decoration: line-through;
         opacity: 0.5;
     }
 
-[data-theme="dark"] .text-muted, 
-[data-theme="dark"] .text-secondary {
-    color: #adb5bd !important; 
-}
+    [data-theme="dark"] .text-muted,
+    [data-theme="dark"] .text-secondary {
+        color: #adb5bd !important;
+    }
 
-[data-theme="dark"] .text-primary {
-    color: #6ea8fe !important; 
-}
+    [data-theme="dark"] .text-primary {
+        color: #6ea8fe !important;
+    }
 
     .checklist-fab {
         position: fixed;
@@ -201,9 +246,9 @@
         transition: transform 0.3s, background-color 0.3s;
     }
 
-    .checklist-fab:hover {
-        transform: scale(1.1);
-    }
+        .checklist-fab:hover {
+            transform: scale(1.1);
+        }
 
     [data-theme="dark"] .checklist-fab {
         background-color: var(--cor-clara);
@@ -212,7 +257,7 @@
     }
 
     .offcanvas-theme {
-        background-color: var(--cor-bege); 
+        background-color: var(--cor-bege);
         color: var(--cor-escura);
         border-left: 1px solid rgba(84, 119, 146, 0.2);
     }
@@ -239,42 +284,91 @@
         background-color: #ffffff !important;
         color: var(--cor-escura) !important;
     }
-    .input-checklist::placeholder {
-        color: rgba(33, 52, 72, 0.6) !important;
-    }
+
+        .input-checklist::placeholder {
+            color: rgba(33, 52, 72, 0.6) !important;
+        }
 
     .btn-add-tarefa {
         background-color: var(--cor-media);
         color: white;
         transition: all 0.3s ease;
     }
-    .btn-add-tarefa:hover {
-        background-color: var(--cor-escura);
+
+        .btn-add-tarefa:hover {
+            background-color: var(--cor-escura);
+            color: white;
+        }
+
+    [data-theme="dark"] .input-checklist {
+        background-color: #172533 !important;
+        color: var(--cor-bege) !important;
+    }
+
+        [data-theme="dark"] .input-checklist::placeholder {
+            color: rgba(234, 224, 207, 0.5) !important;
+        }
+
+    [data-theme="dark"] .btn-add-tarefa {
+        background-color: var(--cor-clara) !important;
+        color: var(--cor-escura) !important;
+        border: none !important;
+    }
+
+        [data-theme="dark"] .btn-add-tarefa:hover {
+            background-color: #ffffff !important;
+            color: var(--cor-escura) !important;
+        }
+
+    .btn-planeja-success {
+        background-color: #4b7d62;
         color: white;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
 
-[data-theme="dark"] .input-checklist {
-    background-color: #172533 !important; 
-    color: var(--cor-bege) !important;    
-}
-    [data-theme="dark"] .input-checklist::placeholder {
-        color: rgba(234, 224, 207, 0.5) !important;
+        .btn-planeja-success:hover {
+            background-color: #365c48;
+            color: white;
+        }
+
+    [data-theme="dark"] .btn-planeja-success {
+        background-color: #5bb088;
+        color: var(--cor-escura);
     }
 
-   [data-theme="dark"] .btn-add-tarefa {
-    background-color: var(--cor-clara) !important;
-    color: var(--cor-escura) !important; 
-    border: none !important; 
-}
-[data-theme="dark"] .btn-add-tarefa:hover {
-    background-color: #ffffff !important;
-    color: var(--cor-escura) !important;
-}
+        [data-theme="dark"] .btn-planeja-success:hover {
+            background-color: #72cfa4;
+            color: var(--cor-escura);
+        }
 
+    .btn-planeja-danger {
+        background-color: #a65252;
+        color: white;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-planeja-danger:hover {
+            background-color: #823d3d;
+            color: white;
+        }
+
+    [data-theme="dark"] .btn-planeja-danger {
+        background-color: #d96666;
+        color: var(--cor-escura);
+    }
+
+        [data-theme="dark"] .btn-planeja-danger:hover {
+            background-color: #ed8282;
+            color: var(--cor-escura);
+        }
 </style>
 
 <div class="container mt-4 mb-5">
-    
+
     <div class="card-planeja mb-4">
         <div class="card-body p-2 p-md-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -283,31 +377,35 @@
                     <div>
                         <h2 class="mb-0 fw-bold">@Model.Nome</h2>
                         <p class="text-muted m-0 small mt-1">
-                            <i class="fa-regular fa-user me-1"></i> Cliente: @(Model.Cliente?.Nome ?? "Não informado") | 
+                            <i class="fa-regular fa-user me-1"></i> Cliente: @(Model.Cliente?.Nome ?? "Não informado") |
                             <i class="fa-regular fa-calendar me-1"></i> Data: @Model.DataEvento.ToString("dd/MM/yyyy")
                         </p>
                         <p class="text-muted m-0 small mt-1">
-                            <i class="fa-solid fa-users me-1"></i> Convidados: @(Model.NumeroConvidados?.ToString() ?? "Não informado") | 
+                            <i class="fa-solid fa-users me-1"></i> Convidados: @(Model.NumeroConvidados?.ToString() ?? "Não informado") |
                             <i class="fa-solid fa-eye me-1"></i> Privacidade: @(Model.Privacidade ?? "Não informado")
                         </p>
                     </div>
                 </div>
 
                 <div class="d-flex gap-2 align-items-center">
+                    <a asp-action="ListaConvidados" asp-controller="Eventos" asp-route-id="@Model.Id" class="btn btn-planeja-outline ms-2">
+                        <i class="fa-solid fa-user-group me-2"></i> Convidados
+                    </a>
+
                     @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
                     {
-                        <form asp-action="AlterarStatus" asp-controller="Eventos" method="post" class="d-inline form-status">
+                        <form asp-action="AlterarStatus" asp-controller="Eventos" method="post" class="d-inline form-status m-0">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <input type="hidden" name="novoStatus" value="Concluído" />
-                            <button type="submit" class="btn btn-success px-3 shadow-sm btn-concluir">
+                            <button type="submit" class="btn btn-planeja-success px-3 shadow-sm btn-concluir">
                                 <i class="fa-solid fa-check-double me-2"></i>Concluir
                             </button>
                         </form>
 
-                        <form asp-action="AlterarStatus" asp-controller="Eventos" method="post" class="d-inline form-status">
+                        <form asp-action="AlterarStatus" asp-controller="Eventos" method="post" class="d-inline form-status m-0">
                             <input type="hidden" name="id" value="@Model.Id" />
                             <input type="hidden" name="novoStatus" value="Cancelado" />
-                            <button type="submit" class="btn btn-danger px-3 shadow-sm btn-cancelar">
+                            <button type="submit" class="btn btn-planeja-danger px-3 shadow-sm btn-cancelar">
                                 <i class="fa-solid fa-ban me-2"></i>Cancelar
                             </button>
                         </form>
@@ -426,7 +524,7 @@
                             {
                                 <tr>
                                     <td class="ps-4 fw-bold">@item.Descricao</td>
-                                    <td><span class="badge bg-secondary">@item.Categoria</span></td> 
+                                    <td><span class="badge bg-secondary">@item.Categoria</span></td>
                                     <td>@item.Valor.ToString("C")</td>
                                     <td>
                                         @switch (item.Status)
@@ -490,9 +588,9 @@
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        
+
         <div class="offcanvas-body">
-            
+
             @if (Model.Status == "Em Planejamento" || Model.Status == "Ativo")
             {
                 <form asp-action="AdicionarChecklist" asp-controller="Eventos" method="post" class="mb-4" novalidate>
@@ -621,154 +719,154 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        if (sessionStorage.getItem('abrirChecklist') === 'true') {
-            const offcanvasElement = document.getElementById('offcanvasChecklist');
-            if (offcanvasElement) {
-                const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
-                bsOffcanvas.show();
-            }
-            sessionStorage.removeItem('abrirChecklist');
-        }
+    if (sessionStorage.getItem('abrirChecklist') === 'true') {
+    const offcanvasElement = document.getElementById('offcanvasChecklist');
+    if (offcanvasElement) {
+    const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+    bsOffcanvas.show();
+    }
+    sessionStorage.removeItem('abrirChecklist');
+    }
 
-        const formAdicionarChecklist = document.querySelector('form[action*="AdicionarChecklist"]');
-        if (formAdicionarChecklist) {
-            formAdicionarChecklist.addEventListener('submit', function(e) {
-                const inputTarefa = this.querySelector('input[name="Descricao"]');
-                
-                if (!inputTarefa.value.trim()) {
-                    e.preventDefault(); 
-                    
-                    const themeColors = getSwalColors();
-                    Swal.fire({
-                        title: 'Atenção!',
-                        text: 'A descrição da tarefa não pode ficar vazia.',
-                        icon: 'warning',
-                        background: themeColors.background,
-                        color: themeColors.color,
-                        confirmButtonColor: themeColors.confirm
-                    });
-                } else {
-                    sessionStorage.setItem('abrirChecklist', 'true');
-                }
-            });
-        }
-        
-        function getSwalColors() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            return {
-                background: isDark ? '#213448' : '#ffffff',
-                color: isDark ? '#EAE0CF' : '#213448',
-                confirm: '#dc3545',
-                cancel: '#547792'
-            };
-        }
+    const formAdicionarChecklist = document.querySelector('form[action*="AdicionarChecklist"]');
+    if (formAdicionarChecklist) {
+    formAdicionarChecklist.addEventListener('submit', function(e) {
+    const inputTarefa = this.querySelector('input[name="Descricao"]');
 
-        document.querySelectorAll('.form-excluir').forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault(); 
-                const btn = this.querySelector('.btn-excluir');
-                const nome = btn.getAttribute('data-nome');
-                const themeColors = getSwalColors();
+    if (!inputTarefa.value.trim()) {
+    e.preventDefault();
 
-                Swal.fire({
-                    title: 'Excluir Item?',
-                    text: `Deseja remover o item "${nome}" deste evento?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    background: themeColors.background,
-                    color: themeColors.color,
-                    confirmButtonColor: themeColors.confirm,
-                    cancelButtonColor: themeColors.cancel,
-                    confirmButtonText: 'Sim, excluir',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) { HTMLFormElement.prototype.submit.call(this); }
-                });
-            });
-        });
+    const themeColors = getSwalColors();
+    Swal.fire({
+    title: 'Atenção!',
+    text: 'A descrição da tarefa não pode ficar vazia.',
+    icon: 'warning',
+    background: themeColors.background,
+    color: themeColors.color,
+    confirmButtonColor: themeColors.confirm
+    });
+    } else {
+    sessionStorage.setItem('abrirChecklist', 'true');
+    }
+    });
+    }
 
-        document.querySelectorAll('.form-excluir-tarefa').forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault(); 
-                const btn = this.querySelector('.btn-excluir-tarefa');
-                const nome = btn.getAttribute('data-nome');
-                const themeColors = getSwalColors();
+    function getSwalColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+    background: isDark ? '#213448' : '#ffffff',
+    color: isDark ? '#EAE0CF' : '#213448',
+    confirm: '#dc3545',
+    cancel: '#547792'
+    };
+    }
 
-                Swal.fire({
-                    title: 'Excluir Tarefa?',
-                    text: `Deseja remover "${nome}" do seu checklist?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    background: themeColors.background,
-                    color: themeColors.color,
-                    confirmButtonColor: themeColors.confirm,
-                    cancelButtonColor: themeColors.cancel,
-                    confirmButtonText: 'Sim, excluir',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) { 
-                        sessionStorage.setItem('abrirChecklist', 'true');
-                        
-                        HTMLFormElement.prototype.submit.call(this); 
-                    }
-                });
-            });
-        });
+    document.querySelectorAll('.form-excluir').forEach(form => {
+    form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const btn = this.querySelector('.btn-excluir');
+    const nome = btn.getAttribute('data-nome');
+    const themeColors = getSwalColors();
 
-        document.querySelectorAll('.chk-tarefa').forEach(chk => {
-            chk.addEventListener('change', function() {
-                const li = this.closest('li');
-                const id = li.getAttribute('data-id');
-                const concluido = this.checked;
+    Swal.fire({
+    title: 'Excluir Item?',
+    text: `Deseja remover o item "${nome}" deste evento?`,
+    icon: 'warning',
+    showCancelButton: true,
+    background: themeColors.background,
+    color: themeColors.color,
+    confirmButtonColor: themeColors.confirm,
+    cancelButtonColor: themeColors.cancel,
+    confirmButtonText: 'Sim, excluir',
+    cancelButtonText: 'Cancelar'
+    }).then((result) => {
+    if (result.isConfirmed) { HTMLFormElement.prototype.submit.call(this); }
+    });
+    });
+    });
 
-                if (concluido) {
-                    li.classList.add('tarefa-concluida');
-                } else {
-                    li.classList.remove('tarefa-concluida');
-                }
+    document.querySelectorAll('.form-excluir-tarefa').forEach(form => {
+    form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const btn = this.querySelector('.btn-excluir-tarefa');
+    const nome = btn.getAttribute('data-nome');
+    const themeColors = getSwalColors();
 
-                const formToken = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]');
-                const token = formToken ? formToken.value : '';
+    Swal.fire({
+    title: 'Excluir Tarefa?',
+    text: `Deseja remover "${nome}" do seu checklist?`,
+    icon: 'warning',
+    showCancelButton: true,
+    background: themeColors.background,
+    color: themeColors.color,
+    confirmButtonColor: themeColors.confirm,
+    cancelButtonColor: themeColors.cancel,
+    confirmButtonText: 'Sim, excluir',
+    cancelButtonText: 'Cancelar'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    sessionStorage.setItem('abrirChecklist', 'true');
 
-                fetch('/Eventos/AtualizarStatusChecklist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'RequestVerificationToken': token
-                    },
-                    body: `id=${id}&concluido=${concluido}`
-                }).then(response => {
-                    if (!response.ok) {
-                        this.checked = !concluido;
-                        if (!concluido) {
-                            li.classList.add('tarefa-concluida');
-                        } else {
-                            li.classList.remove('tarefa-concluida');
-                        }
-                    }
-                }).catch(error => {
-                    console.error("Erro ao atualizar tarefa: ", error);
-                });
-            });
-        });
+    HTMLFormElement.prototype.submit.call(this);
+    }
+    });
+    });
+    });
+
+    document.querySelectorAll('.chk-tarefa').forEach(chk => {
+    chk.addEventListener('change', function() {
+    const li = this.closest('li');
+    const id = li.getAttribute('data-id');
+    const concluido = this.checked;
+
+    if (concluido) {
+    li.classList.add('tarefa-concluida');
+    } else {
+    li.classList.remove('tarefa-concluida');
+    }
+
+    const formToken = document.querySelector('#antiForgeryForm input[name="__RequestVerificationToken"]');
+    const token = formToken ? formToken.value : '';
+
+    fetch('/Eventos/AtualizarStatusChecklist', {
+    method: 'POST',
+    headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'RequestVerificationToken': token
+    },
+    body: `id=${id}&concluido=${concluido}`
+    }).then(response => {
+    if (!response.ok) {
+    this.checked = !concluido;
+    if (!concluido) {
+    li.classList.add('tarefa-concluida');
+    } else {
+    li.classList.remove('tarefa-concluida');
+    }
+    }
+    }).catch(error => {
+    console.error("Erro ao atualizar tarefa: ", error);
+    });
+    });
+    });
 
     });
 </script>
 
-                        @if (TempData["Sucesso"] != null)
+@if (TempData["Sucesso"] != null)
 {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const themeColors = getSwalColors(); // Aproveitando sua função de cores dinâmicas
-            
-            Swal.fire({
-                title: 'Sucesso!',
-                text: '@Html.Raw(TempData["Sucesso"])',
-                icon: 'success',
-                background: themeColors.background,
-                color: themeColors.color,
-                confirmButtonColor: themeColors.confirm
-            });
+        const themeColors = getSwalColors(); // Aproveitando sua função de cores dinâmicas
+
+        Swal.fire({
+        title: 'Sucesso!',
+        text: '@Html.Raw(TempData["Sucesso"])',
+        icon: 'success',
+        background: themeColors.background,
+        color: themeColors.color,
+        confirmButtonColor: themeColors.confirm
+        });
         });
     </script>
 }
@@ -777,16 +875,16 @@
 {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const themeColors = getSwalColors();
-            
-            Swal.fire({
-                title: 'Oops!',
-                text: '@Html.Raw(TempData["Erro"])',
-                icon: 'error',
-                background: themeColors.background,
-                color: themeColors.color,
-                confirmButtonColor: themeColors.confirm
-            });
+        const themeColors = getSwalColors();
+
+        Swal.fire({
+        title: 'Oops!',
+        text: '@Html.Raw(TempData["Erro"])',
+        icon: 'error',
+        background: themeColors.background,
+        color: themeColors.color,
+        confirmButtonColor: themeColors.confirm
+        });
         });
     </script>
 }

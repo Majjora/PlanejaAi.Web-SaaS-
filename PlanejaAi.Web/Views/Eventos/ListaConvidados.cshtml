@@ -1,0 +1,377 @@
+﻿@model IEnumerable<PlanejaAi.Models.Convidado>
+@{
+    ViewData["Title"] = "Gestão de Convidados";
+    var linkInscricao = $"{Context.Request.Scheme}://{Context.Request.Host}/Eventos/Inscricao/{ViewBag.EventoId}";
+}
+
+<style>
+    :root {
+        --cor-escura: #213448;
+        --cor-media: #547792;
+        --cor-clara: #94B4C1;
+        --cor-bege: #EAE0CF;
+    }
+
+    body {
+        background-color: var(--cor-bege) !important;
+        color: var(--cor-escura);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+        background-color: var(--cor-escura) !important;
+        color: var(--cor-bege);
+    }
+
+    .card-planeja {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+
+    [data-theme="dark"] .card-planeja {
+        background-color: var(--cor-media) !important;
+    }
+
+    .thead-planeja th {
+        color: var(--cor-media) !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    .table tbody td {
+        color: #000000 !important;
+        vertical-align: middle;
+    }
+
+    [data-theme="dark"] .thead-planeja th {
+        color: var(--cor-bege) !important;
+    }
+
+    [data-theme="dark"] .table tbody td {
+        color: #ffffff !important;
+    }
+
+        [data-theme="dark"] .table tbody td .text-muted,
+        [data-theme="dark"] .table tbody td small.text-muted,
+        [data-theme="dark"] .form-label.text-muted {
+            color: #ffffff !important;
+            opacity: 0.85;
+        }
+
+    .thead-planeja {
+        background-color: rgba(33, 52, 72, 0.05);
+    }
+
+    .btn-planeja-primary {
+        background-color: var(--cor-media);
+        color: white;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-planeja-primary:hover {
+            background-color: var(--cor-escura);
+            color: white;
+        }
+
+    [data-theme="dark"] .btn-planeja-primary {
+        background-color: var(--cor-clara);
+        color: var(--cor-escura);
+    }
+
+        [data-theme="dark"] .btn-planeja-primary:hover {
+            background-color: #ffffff;
+            color: var(--cor-escura);
+        }
+
+    .btn-planeja-outline {
+        border: 1px solid var(--cor-media);
+        color: var(--cor-media);
+        font-weight: 600;
+        background-color: transparent;
+        transition: all 0.3s ease;
+    }
+
+        .btn-planeja-outline:hover {
+            background-color: var(--cor-media);
+            color: white;
+        }
+
+    [data-theme="dark"] .btn-planeja-outline {
+        border-color: var(--cor-bege);
+        color: var(--cor-bege);
+    }
+
+        [data-theme="dark"] .btn-planeja-outline:hover {
+            background-color: var(--cor-bege);
+            color: var(--cor-escura);
+        }
+
+    .box-link {
+        background-color: #ffffff;
+        border: 1px solid var(--cor-media);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+        .box-link label {
+            color: var(--cor-media);
+        }
+
+    [data-theme="dark"] .box-link {
+        background-color: var(--cor-media);
+        border: 1px solid transparent;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+        [data-theme="dark"] .box-link label {
+            color: var(--cor-bege) !important;
+        }
+
+        [data-theme="dark"] .box-link .text-muted {
+            color: #ffffff !important;
+        }
+
+    .input-link {
+        background-color: #f8f9fa !important;
+        color: var(--cor-escura) !important;
+        border: 1px solid #dee2e6;
+    }
+
+    [data-theme="dark"] .input-link {
+        background-color: var(--cor-escura) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+</style>
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="m-0 fw-bold" style="color: var(--cor-media);">Lista de Convidados</h2>
+            <p class="text-muted m-0">Gerenciando inscrições do evento: <strong>@ViewBag.EventoNome</strong></p>
+        </div>
+        <div>
+            <a asp-action="Detalhes" asp-route-id="@ViewBag.EventoId" class="btn btn-planeja-outline px-4 shadow-sm">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    @if (ViewBag.EventoStatus == "Concluído" || ViewBag.EventoStatus == "Cancelado")
+    {
+        <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" style="background-color: rgba(243, 156, 18, 0.15); color: #b9770e;">
+            <i class="fa-solid fa-lock fs-3 me-3"></i>
+            <div>
+                <h5 class="mb-1 fw-bold">Inscrições Encerradas</h5>
+                <p class="mb-0">Este evento está <strong>@ViewBag.EventoStatus</strong>. O link de inscrição foi desativado e o sistema não aceita novos convidados.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="box-link mb-4 shadow-sm">
+            <label class="fw-bold mb-2">
+                <i class="fa-solid fa-link me-2"></i>Link Público de Confirmação de Presença
+            </label>
+            <div class="input-group">
+                <input type="text" class="form-control input-link" id="inputUrlInscricao" value="@linkInscricao" readonly>
+                <button class="btn btn-planeja-primary px-4" type="button" onclick="copiarLinkPublico()">
+                    <i class="fa-regular fa-copy me-2"></i> Copiar Link
+                </button>
+            </div>
+            <small class="text-muted mt-2 d-block">
+                <i class="fa-solid fa-circle-info me-1"></i> Copie e envie este link para o cliente distribuir aos convidados.
+            </small>
+        </div>
+
+        <div class="box-link mb-4 shadow-sm">
+            <label class="fw-bold mb-2">
+                <i class="fa-solid fa-user-plus me-2"></i>Adicionar Convidado Manualmente
+            </label>
+            <form id="formAdicionarManual" asp-action="AdicionarConvidadoManual" method="post" novalidate>
+                <input type="hidden" name="eventoId" value="@ViewBag.EventoId" />
+
+                <div class="input-group">
+                    <input type="text" name="nome" id="inputNomeConvidado" class="form-control input-link" placeholder="Nome completo do convidado" autocomplete="off">
+
+                    <select name="status" class="form-select input-link" style="max-width: 200px;">
+                        <option value="0" selected>Não Confirmado</option>
+                        <option value="1">Confirmado</option>
+                        <option value="2">Em Dúvida</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-planeja-primary px-4">
+                        <i class="fa-solid fa-plus me-2"></i> Incluir
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+
+    <div class="card-planeja shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="thead-planeja">
+                    <tr>
+                        <th class="ps-4 border-0">Nome do Convidado</th>
+                        <th class="border-0">Status</th>
+                        <th class="border-0">Data de Cadastro</th>
+                        <th class="text-end pe-4 border-0">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var convidado in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">@convidado.Nome</td>
+                                <td>
+                                    @if (convidado.Confirmacao == 1)
+                                    {
+                                        <span class="badge" style="background-color: #4b7d62;">Confirmado</span>
+                                    }
+                                    else if (convidado.Confirmacao == 2)
+                                    {
+                                        <span class="badge" style="background-color: #3498db;">Em Dúvida</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge" style="background-color: #d68910;">Não Confirmado</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <i class="fa-regular fa-clock me-1"></i> @convidado.DataCadastro.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+                                </td>
+                                <td class="text-end pe-4 align-middle">
+                                    <div class="d-flex justify-content-end align-items-center gap-2">
+                                        <a asp-action="EditarConvidado" asp-route-id="@convidado.Id" class="btn btn-sm text-info" title="Editar">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <form asp-action="RemoverConvidado" method="post" class="m-0 p-0 d-inline-flex form-excluir-convidado">
+                                            <input type="hidden" name="id" value="@convidado.Id" />
+                                            <input type="hidden" name="eventoId" value="@convidado.EventoId" />
+                                            <button type="submit" class="btn btn-sm text-danger btn-excluir-convidado" data-nome="@convidado.Nome" title="Excluir">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted fst-italic">
+                                <i class="fa-solid fa-users-slash fs-2 mb-3 opacity-50 d-block"></i>
+                                Nenhum convidado na lista ainda.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const sucessoMsg = '@Html.Raw(TempData["Sucesso"])';
+
+        if (sucessoMsg) {
+        Swal.fire({
+        icon: 'success',
+        title: 'Feito!',
+        text: sucessoMsg,
+        background: isDark ? '#213448' : '#ffffff',
+        color: isDark ? '#EAE0CF' : '#213448',
+        confirmButtonColor: '#4b7d62',
+        timer: 3000,
+        showConfirmButton: false,
+        scrollbarPadding: false
+        });
+        }
+
+        document.querySelectorAll('.form-excluir-convidado').forEach(form => {
+        form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const btn = this.querySelector('.btn-excluir-convidado');
+        const nome = btn.getAttribute('data-nome');
+        const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        Swal.fire({
+        title: 'Tem certeza?',
+        html: `Você está prestes a remover <b>${nome}</b> da lista de convidados.`,
+        icon: 'warning',
+        showCancelButton: true,
+        background: isDarkTheme ? '#213448' : '#ffffff',
+        color: isDarkTheme ? '#EAE0CF' : '#213448',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#547792',
+        confirmButtonText: 'Sim, remover!',
+        cancelButtonText: 'Cancelar',
+        scrollbarPadding: false
+        }).then((result) => {
+        if (result.isConfirmed) {
+        HTMLFormElement.prototype.submit.call(this);
+        }
+        });
+        });
+        });
+        });
+
+        function copiarLinkPublico() {
+        const inputLink = document.getElementById('inputUrlInscricao');
+        inputLink.select();
+        inputLink.setSelectionRange(0, 99999);
+
+        navigator.clipboard.writeText(inputLink.value).then(() => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        Swal.fire({
+        title: 'Link Copiado!',
+        html: `O link para confirmação de presença foi copiado.<br><br><b>Envie para o seu cliente!</b>`,
+        icon: 'success',
+        background: isDark ? '#213448' : '#ffffff',
+        color: isDark ? '#EAE0CF' : '#213448',
+        confirmButtonColor: '#4b7d62',
+        scrollbarPadding: false
+        });
+        }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+        });
+        }
+
+        document.getElementById('formAdicionarManual')?.addEventListener('submit', function (e) {
+        const inputNome = document.getElementById('inputNomeConvidado').value.trim();
+        if (!inputNome) {
+        e.preventDefault();
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        Swal.fire({
+        title: 'Atenção!',
+        text: 'Por favor, digite o nome do convidado antes de incluir.',
+        icon: 'warning',
+        background: isDark ? '#213448' : '#ffffff',
+        color: isDark ? '#EAE0CF' : '#213448',
+        confirmButtonColor: '#547792',
+        scrollbarPadding: false
+        });
+        }
+        });
+    </script>
+}
