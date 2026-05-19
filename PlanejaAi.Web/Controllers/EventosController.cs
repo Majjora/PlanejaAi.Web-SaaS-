@@ -268,7 +268,7 @@ namespace PlanejaAi.Controllers
         public async Task<IActionResult> Deletar(int id)
         {
             int empId = GetEmpresaId();
-            bool isOwner = User.IsInRole("owner");
+            bool isOwner = User.IsInRole("owner") || User.IsInRole("Owner");
 
             var query = _context.Eventos.AsQueryable();
             if (!isOwner) query = query.Where(e => e.EmpresaId == empId);
@@ -277,12 +277,21 @@ namespace PlanejaAi.Controllers
 
             if (evento != null)
             {
+                var convidadosVinculados = _context.Convidados.Where(c => c.EventoId == id);
+
+                _context.Convidados.RemoveRange(convidadosVinculados);
+
                 _context.Eventos.Remove(evento);
+
                 await _context.SaveChangesAsync();
 
-                await RegistrarLog("DELETE", $"Evento {evento.Nome} removido completamente do sistema.");
+                await RegistrarLog("DELETE", $"Evento {evento.Nome} e seus convidados foram removidos completamente do sistema.");
 
-                TempData["Sucesso"] = "Evento excluído!";
+                TempData["Sucesso"] = "Evento excluído com sucesso!";
+            }
+            else
+            {
+                TempData["Erro"] = "Evento não encontrado ou você não tem permissão para excluí-lo.";
             }
 
             return RedirectToAction(nameof(Index));
