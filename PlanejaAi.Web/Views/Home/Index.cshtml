@@ -5,7 +5,7 @@
 }
 
 <style>
-    
+
     :root {
         --p-clara: #94B4C1;
         --p-bege: #EAE0CF;
@@ -216,15 +216,18 @@
             </a>
         </div>
 
-        <div class="col">
-            <a href="@Url.Action("Index", "Orcamentos")">
-                <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-coins"></i></div>
-                    <h5 class="card-title">Financeiro</h5>
-                    <p class="card-text">Controle de custos e propostas.</p>
-                </div>
-            </a>
-        </div>
+        @if (perfil == "admin" || perfil == "owner")
+        {
+            <div class="col">
+                <a href="@Url.Action("Index", "Dashboard")">
+                    <div class="card-modulo">
+                        <div class="icon-box"><i class="fa-solid fa-chart-line"></i></div>
+                        <h5 class="card-title">Dashboard</h5>
+                        <p class="card-text">Métricas, gráficos e visão geral do negócio.</p>
+                    </div>
+                </a>
+            </div>
+        }
 
         
         @if (perfil == "owner")

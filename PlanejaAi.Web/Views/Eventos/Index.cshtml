@@ -82,8 +82,6 @@
     .btn-planeja-primary:hover {
     background-color: var(--cor-escura);
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2) !important;
     }
 
     [data-theme="dark"] .btn-planeja-primary {
@@ -94,8 +92,6 @@
     [data-theme="dark"] .btn-planeja-primary:hover {
     background-color: #ffffff;
     color: var(--cor-escura);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5) !important;
     }
 
     .texto-identificador-empresa {
@@ -120,6 +116,13 @@
             <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-house me-2"></i>Início
             </a>
+
+            @if (User.IsInRole("admin") || User.IsInRole("owner"))
+            {
+                <a asp-action="ExportarCsv" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" title="Exportar para Excel">
+                    <i class="fa-solid fa-file-export me-1"></i> Exportar
+                </a>
+            }
 
             <a asp-action="Manter" class="btn btn-planeja-primary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-plus me-2"></i>Novo Evento
@@ -163,7 +166,7 @@
                             <td class="ps-4">
                                 <div class="fw-bold">@item.Nome</div>
                                 <div class="text-muted small">Tipo: @(string.IsNullOrEmpty(item.Tipo) ? "Não informado" : item.Tipo)</div>
-                                
+
                                 @if (User.IsInRole("owner"))
                                 {
                                     <div class="small mt-1 texto-identificador-empresa">
@@ -171,7 +174,7 @@
                                     </div>
                                 }
                             </td>
-                            
+
                             <td>
                                 <div><i class="fa-regular fa-calendar me-1"></i> @item.DataEvento.ToString("dd/MM/yyyy")</div>
                                 <small class="text-muted fw-bold">Orçamento: @item.ValorTotalOrcamento.ToString("C")</small>
@@ -223,16 +226,15 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const erroMsg = '@Html.Raw(TempData["Erro"])';
-    const sucessoMsg = '@Html.Raw(TempData["Sucesso"])';
+    const erroMsg = @Html.Raw(Json.Serialize(TempData["Erro"]));
+    const sucessoMsg = @Html.Raw(Json.Serialize(TempData["Sucesso"]));
 
-    if (erroMsg) {
+    if (erroMsg && erroMsg !== "") {
     Swal.fire({ icon: 'error', title: 'Ops!', text: erroMsg, background: isDark ? '#213448' : '#ffffff', color: isDark ? '#EAE0CF' : '#213448', confirmButtonColor: '#547792' });
     }
-    if (sucessoMsg) {
+    if (sucessoMsg && sucessoMsg !== "") {
     Swal.fire({ icon: 'success', title: 'Sucesso!', text: sucessoMsg, background: isDark ? '#213448' : '#ffffff', color: isDark ? '#EAE0CF' : '#213448', confirmButtonColor: '#547792' });
     }
-    });
 
     document.querySelectorAll('.form-excluir').forEach(form => {
     form.addEventListener('submit', function (e) {
@@ -261,11 +263,11 @@
     document.querySelectorAll('.btn-editar').forEach(btn => {
     btn.addEventListener('click', function (e) {
     const status = this.getAttribute('data-status');
-            
+
     if (status === 'Concluído' || status === 'Cancelado') {
     e.preventDefault();
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                
+
     Swal.fire({
     icon: 'warning',
     title: 'Ação Bloqueada',

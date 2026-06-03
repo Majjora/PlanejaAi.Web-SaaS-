@@ -134,6 +134,33 @@
     background-color: var(--cor-bege);
     color: var(--cor-escura);
     }
+
+    .btn-toggle-doc-input {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--cor-clara);
+    color: var(--cor-media);
+    transition: all 0.3s ease;
+    }
+
+    .btn-toggle-doc-input:hover {
+    background-color: var(--cor-bege);
+    color: var(--cor-escura);
+    }
+
+    [data-theme="dark"] .btn-toggle-doc-input {
+    background-color: var(--cor-escura) !important;
+    border-color: var(--cor-clara);
+    color: var(--cor-bege);
+    }
+
+    [data-theme="dark"] .btn-toggle-doc-input:hover {
+    background-color: var(--cor-media) !important;
+    color: #ffffff;
+    }
+
+    [data-theme="dark"] .text-muted {
+    color: var(--cor-clara) !important;
+    }
 </style>
 
 <div class="container mt-5 mb-5">
@@ -162,8 +189,25 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">CPF ou CNPJ*</label>
-                    <input asp-for="Documento" id="documento" class="form-control" maxlength="14" oninput="this.value = this.value.replace(/\D/g, '')" onblur="validarDocumentoInput(this)" required />
-                    <div class="invalid-feedback">Por favor, digite um CPF (11) ou CNPJ (14) válido.</div>
+
+                    @if (User.IsInRole("admin") || User.IsInRole("owner") || User.IsInRole("Admin") || User.IsInRole("Owner") || Model.Id == 0)
+                    {
+                        <div class="input-group has-validation">
+                            <input asp-for="Documento" type="password" value="@Model?.Documento" id="documento" class="form-control" maxlength="14" oninput="this.value = this.value.replace(/\D/g, '')" onblur="validarDocumentoInput(this)" autocomplete="off" required />
+
+                            <button class="btn btn-toggle-doc-input" type="button" title="Mostrar/Ocultar Documento">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+
+                            <div class="invalid-feedback">Por favor, digite um CPF (11) ou CNPJ (14) válido.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <input asp-for="Documento" type="password" value="@Model?.Documento" id="documento" class="form-control" maxlength="14" readonly required />
+                        <small class="text-muted mt-1 d-block" style="font-size: 0.75rem;"><i class="fa-solid fa-lock me-1"></i>Visão restrita</small>
+                        <div class="invalid-feedback">Por favor, digite um CPF (11) ou CNPJ (14) válido.</div>
+                    }
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Status*</label>
@@ -237,7 +281,7 @@
 <script>
     function validarDocumentoInput(input) {
     var doc = input.value.replace(/\D/g, '');
-        
+
     if (doc === "") {
     input.setCustomValidity('Obrigatório');
     } else if (doc.length === 11) {
@@ -248,7 +292,7 @@
     input.setCustomValidity('');
     }
     } else if (doc.length === 14) {
- 
+
     if (!testaCNPJ(doc)) {
     input.setCustomValidity('CNPJ Inválido');
     } else {
@@ -294,7 +338,7 @@
     function testaCPF(strCPF) {
     var Soma = 0;
     var Resto;
-        
+
     if (/^(\d)\1+$/.test(strCPF)) return false;
 
     for (var i = 1; i <= 9; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (11 - i);
@@ -309,7 +353,7 @@
 
     if ((Resto == 10) || (Resto == 11)) Resto = 0;
     if (Resto != parseInt(strCPF.substring(10, 11) ) ) return false;
-        
+
     return true;
     }
 
@@ -322,7 +366,7 @@
     var digitos = cnpj.substring(tamanho);
     var soma = 0;
     var pos = tamanho - 7;
-        
+
     for (var i = tamanho; i >= 1; i--) {
     soma += numeros.charAt(tamanho - i) * pos--;
     if (pos < 2) pos = 9;
@@ -385,4 +429,24 @@
     });
     }
     }
+
+    document.querySelectorAll('.btn-toggle-doc-input').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const input = this.previousElementSibling;
+    const icon = this.querySelector('i');
+
+    if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+    this.title = "Ocultar Documento";
+    } else {
+    input.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+    this.title = "Mostrar Documento";
+    }
+    });
+    });
 </script>

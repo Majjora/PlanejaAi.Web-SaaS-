@@ -13,7 +13,7 @@
     body {
     background-color: var(--cor-bege) !important;
     color: var(--cor-escura);
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     [data-theme="dark"] body {
@@ -82,8 +82,6 @@
     .btn-planeja-primary:hover {
     background-color: var(--cor-escura);
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2) !important;
     }
 
     [data-theme="dark"] .btn-planeja-primary {
@@ -94,8 +92,6 @@
     [data-theme="dark"] .btn-planeja-primary:hover {
     background-color: #ffffff;
     color: var(--cor-escura);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5) !important;
     }
 
     .texto-identificador-empresa {
@@ -106,6 +102,71 @@
 
     [data-theme="dark"] .texto-identificador-empresa {
     color: var(--cor-clara) !important;
+    }
+
+    [data-theme="dark"] .modal-content p,
+    [data-theme="dark"] .modal-content label,
+    [data-theme="dark"] .modal-content h5 {
+    color: #ffffff !important;
+    }
+
+    [data-theme="dark"] .modal-content .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    [data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+    }
+
+    .input-link {
+    background-color: #f8f9fa !important;
+    color: var(--cor-escura) !important;
+    border: 1px solid #dee2e6;
+    }
+
+    [data-theme="dark"] .input-link {
+    background-color: var(--cor-escura) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    [data-theme="dark"] .input-link::-webkit-file-upload-button {
+    background-color: #f8f9fa !important;
+    color: var(--cor-escura) !important;
+    border: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: background-color 0.2s ease;
+    }
+
+    [data-theme="dark"] .input-link::file-selector-button {
+    background-color: #f8f9fa !important;
+    color: var(--cor-escura) !important;
+    border: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: background-color 0.2s ease;
+    }
+
+    [data-theme="dark"] .input-link:hover::-webkit-file-upload-button {
+    background-color: #ced4da !important;
+    cursor: pointer;
+    }
+
+    [data-theme="dark"] .input-link:hover::file-selector-button {
+    background-color: #ced4da !important;
+    cursor: pointer;
+    }
+
+    [data-theme="dark"] .modal-content .btn-outline-secondary {
+    border: 1px solid var(--cor-bege) !important;
+    color: var(--cor-bege) !important;
+    background-color: transparent !important;
+    transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .modal-content .btn-outline-secondary:hover {
+    background-color: var(--cor-bege) !important;
+    color: #000000 !important;
+    border-color: var(--cor-bege) !important;
     }
 </style>
 
@@ -128,6 +189,17 @@
             <a asp-controller="ProdutosFornecedor" asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-box me-2"></i>Produtos
             </a>
+
+            @if (User.IsInRole("admin") || User.IsInRole("owner"))
+            {
+                <a asp-action="ExportarCsv" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" title="Exportar para Excel">
+                    <i class="fa-solid fa-file-export me-1"></i> Exportar
+                </a>
+
+                <button type="button" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalImportarCsv">
+                    <i class="fa-solid fa-file-import me-1"></i> Importar
+                </button>
+            }
 
             <a asp-action="Criar" class="btn btn-planeja-primary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-plus me-2"></i>Novo Fornecedor
@@ -224,11 +296,67 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalImportarCsv" tabindex="-1" aria-labelledby="modalImportarCsvLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content card-planeja">
+            <form id="formImportarCsv" asp-action="ImportarCsv" method="post" enctype="multipart/form-data" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="modalImportarCsvLabel" style="color: var(--cor-media);">
+                        <i class="fa-solid fa-file-import me-2"></i> Importar Fornecedores
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-1">
+                        Suba um arquivo <strong>.csv</strong> contendo a lista. O formato ideal tem colunas separadas por ponto e vírgula (;).<br><br>
+                        <strong>Coluna 1:</strong> Nome do fornecedor (Obrigatório)<br>
+                        <strong>Coluna 2:</strong> CPF ou CNPJ<br>
+                        <strong>Coluna 3:</strong> E-mail
+                    </p>
+
+                    <div>
+                        <label for="arquivoCsv" class="form-label fw-bold mt-2">Arquivo CSV</label>
+                        <input class="form-control input-link" type="file" id="arquivoCsv" name="arquivoCsv" accept=".csv">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-planeja-primary fw-normal">Importar Agora</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+    function instrucoesImportacao() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    Swal.fire({
+    title: 'Instruções de Importação',
+    html: 'Para importar, envie um arquivo <b>.csv</b> com as colunas nesta ordem exata:<br><br><b>1. Nome</b> (Obrigatório)<br><b>2. CPF ou CNPJ</b><br><b>3. E-mail</b><br><br><small><i>Nota: A primeira linha do arquivo (cabeçalho) será ignorada.</i></small>',
+    icon: 'info',
+    showCancelButton: true,
+    background: isDark ? '#213448' : '#ffffff',
+    color: isDark ? '#EAE0CF' : '#213448',
+    confirmButtonColor: '#547792',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Entendi, selecionar arquivo',
+    cancelButtonText: 'Cancelar',
+    scrollbarPadding: false
+    }).then((result) => {
+    if (result.isConfirmed) {
+    document.getElementById('inputCsv').click();
+    }
+    });
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const erroMsg = '@Html.Raw(TempData["Erro"])';
-    const sucessoMsg = '@Html.Raw(TempData["Sucesso"])';
+
+    const erroMsg = `@Html.Raw(TempData["Erro"])`;
+    const sucessoMsg = `@Html.Raw(TempData["Sucesso"])`;
 
     if (erroMsg) {
     Swal.fire({ icon: 'error', title: 'Ops!', text: erroMsg, background: isDark ? '#213448' : '#ffffff', color: isDark ? '#EAE0CF' : '#213448', confirmButtonColor: '#547792' });
@@ -260,6 +388,42 @@
     if (result.isConfirmed) { HTMLFormElement.prototype.submit.call(this); }
     });
     });
+    });
+
+    document.getElementById('formImportarCsv')?.addEventListener('submit', function (e) {
+    const fileInput = document.getElementById('arquivoCsv');
+    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    if (!fileInput.value) {
+    e.preventDefault();
+    Swal.fire({
+    title: 'Arquivo ausente!',
+    text: 'Por favor, selecione um arquivo .csv válido antes de clicar em importar.',
+    icon: 'warning',
+    background: isDarkTheme ? '#213448' : '#ffffff',
+    color: isDarkTheme ? '#EAE0CF' : '#213448',
+    confirmButtonColor: '#547792',
+    scrollbarPadding: false
+    });
+    return;
+    }
+
+    const fileName = fileInput.value.toLowerCase();
+    if (!fileName.endsWith('.csv')) {
+    e.preventDefault();
+
+    fileInput.value = '';
+
+    Swal.fire({
+    title: 'Formato Inválido!',
+    text: 'Você só pode importar planilhas no formato .CSV. Por favor, salve seu arquivo como CSV e tente novamente.',
+    icon: 'error',
+    background: isDarkTheme ? '#213448' : '#ffffff',
+    color: isDarkTheme ? '#EAE0CF' : '#213448',
+    confirmButtonColor: '#547792',
+    scrollbarPadding: false
+    });
+    }
     });
 
     function aplicarFiltro() {

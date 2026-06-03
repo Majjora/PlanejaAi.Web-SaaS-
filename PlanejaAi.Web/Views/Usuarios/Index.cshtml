@@ -118,7 +118,11 @@
             <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-house me-2"></i>Início
             </a>
-           
+
+            <a asp-action="ExportarCsv" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" title="Exportar dados">
+                <i class="fa-solid fa-download me-2"></i>Exportar
+            </a>
+
             <a asp-action="Criar" class="btn btn-planeja-primary btn-sm px-3 shadow-sm">
                 <i class="fa-solid fa-plus me-2"></i>Novo Usuário
             </a>
@@ -251,7 +255,7 @@
     cancelButtonText: 'Cancelar'
     }).then((result) => {
     if (result.isConfirmed) {
-                    
+
     HTMLFormElement.prototype.submit.call(this);
     }
     });
@@ -260,7 +264,7 @@
 </script>
 
 <script>
-    
+
     function aplicarFiltroUsuarios() {
     let textoBusca = document.getElementById('inputBusca').value.toLowerCase();
     let linhasTabela = document.querySelectorAll('.table tbody tr');

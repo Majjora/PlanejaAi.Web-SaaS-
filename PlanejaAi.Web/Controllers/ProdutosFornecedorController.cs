@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PlanejaAi.Data;
 using PlanejaAi.Models;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace PlanejaAi.Controllers
@@ -305,6 +306,248 @@ namespace PlanejaAi.Controllers
             {
                 return RedirectToAction(nameof(Index), new { fornecedorId = fornecedorOrigem });
             }
+
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "owner,admin")]
+        public async Task<IActionResult> ExportarCsv()
+        {
+            var role = User.FindFirstValue(ClaimTypes.Role)?.ToLower();
+            var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
+            bool isOwner = role == "owner";
+
+            if (role != "admin" && role != "owner")
+            {
+                TempData["Erro"] = "Acesso negado. Apenas Administradores podem exportar dados.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                var query = _context.ProdutosFornecedor
+                    .Include(p => p.Categoria)
+                    .Include(p => p.Fornecedor)
+                    .AsNoTracking()
+                    .AsQueryable();
+
+                if (!isOwner)
+                {
+                    query = query.Where(p => p.Fornecedor.EmpresaId == empIdLogado);
+                }
+
+                var produtos = await query.OrderBy(p => p.Nome).ToListAsync();
+
+                var csv = new StringBuilder();
+
+                if (isOwner)
+                {
+                    csv.AppendLine("Empresa ID;Nome;Descrição;Valor Padrão;Unidade;Categoria;Fornecedor;Status;Data de Cadastro");
+                }
+                else
+                {
+                    csv.AppendLine("Nome;Descrição;Valor Padrão;Unidade;Categoria;Fornecedor;Status;Data de Cadastro");
+                }
+
+                var culturaBr = new System.Globalization.CultureInfo("pt-BR");
+
+                foreach (var produto in produtos)
+                {
+                    var nome = produto.Nome?.Replace(";", ",").Replace("\r", "").Replace("\n", " ") ?? "";
+                    var descricao = produto.Descricao?.Replace(";", ",").Replace("\r", "").Replace("\n", " ") ?? "";
+                    var valorPadrao = produto.ValorPadrao?.ToString("F2", culturaBr) ?? "0,00";
+                    var unidade = produto.Unidade?.Replace(";", ",") ?? "Unidade";
+                    var categoria = produto.Categoria?.Nome?.Replace(";", ",") ?? "Sem Categoria";
+                    var fornecedor = produto.Fornecedor?.Nome?.Replace(";", ",") ?? "Sem Fornecedor";
+
+                    var status = produto.Ativo ? "Ativo" : "Inativo";
+                    var dataCadastro = produto.DataCadastro.ToString("dd/MM/yyyy HH:mm:ss");
+
+                    if (isOwner)
+                    {
+                        var empresaId = produto.Fornecedor?.EmpresaId ?? 0;
+                        csv.AppendLine($"{empresaId};{nome};{descricao};{valorPadrao};{unidade};{categoria};{fornecedor};{status};{dataCadastro}");
+                    }
+                    else
+                    {
+                        csv.AppendLine($"{nome};{descricao};{valorPadrao};{unidade};{categoria};{fornecedor};{status};{dataCadastro}");
+                    }
+                }
+
+                RegistrarLog("EXPORT", "ProdutosFornecedor", $"Exportação CSV Produtos: {produtos.Count} itens exportados.", empIdLogado);
+                await _context.SaveChangesAsync();
+
+                var buffer = Encoding.UTF8.GetBytes(csv.ToString());
+                var bom = Encoding.UTF8.GetPreamble();
+                var arquivoFinal = bom.Concat(buffer).ToArray();
+
+                var nomeArquivo = $"produtos_exportados_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+                return File(arquivoFinal, "text/csv", nomeArquivo);
+            }
+            catch (Exception ex)
+            {
+                TempData["Erro"] = "Erro crítico ao gerar o arquivo de exportação: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "owner,admin")]
+        public async Task<IActionResult> ImportarCsv(IFormFile arquivoCsv)
+        {
+            var role = User.FindFirstValue(ClaimTypes.Role)?.ToLower();
+            var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
+
+            if (role != "admin" && role != "owner")
+            {
+                TempData["Erro"] = "Acesso negado. Apenas Administradores podem importar dados.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (arquivoCsv == null || arquivoCsv.Length == 0)
+            {
+                TempData["Erro"] = "Por favor, selecione um arquivo CSV válido.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                int totalInserido = 0;
+                int totalAtualizado = 0;
+                int numeroDaLinha = 1;
+
+                var categoriasExistentes = await _context.CategoriasServico
+                    .Where(c => c.EmpresaId == empIdLogado)
+                    .ToListAsync();
+
+                var fornecedoresExistentes = await _context.Fornecedores
+                    .Where(f => f.EmpresaId == empIdLogado)
+                    .ToListAsync();
+
+                var produtosExistentes = await _context.ProdutosFornecedor
+                    .Include(p => p.Fornecedor)
+                    .Where(p => p.Fornecedor.EmpresaId == empIdLogado)
+                    .ToListAsync();
+
+                using (var reader = new StreamReader(arquivoCsv.OpenReadStream(), Encoding.UTF8, true))
+                {
+                    var cabecalho = await reader.ReadLineAsync();
+
+                    if (cabecalho != null && (cabecalho.ToLower().Contains("confirmado") || cabecalho.ToLower().Contains("convidado") || cabecalho.ToLower().Contains("cnpj")))
+                    {
+                        TempData["Erro"] = "Importação cancelada: O layout do arquivo enviado é incompatível com o modelo esperado para Produtos.";
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    while (!reader.EndOfStream)
+                    {
+                        var linha = await reader.ReadLineAsync();
+                        numeroDaLinha++;
+
+                        if (string.IsNullOrWhiteSpace(linha) || string.IsNullOrWhiteSpace(linha.Replace(";", "")))
+                        {
+                            continue;
+                        }
+
+                        var campos = linha.Split(';');
+                        if (campos.Length < 6)
+                        {
+                            TempData["Erro"] = $"Importação cancelada: A linha {numeroDaLinha} está incompleta. Certifique-se de que o arquivo possui todas as 6 colunas necessárias.";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        var nomeProduto = campos[0]?.Trim();
+                        var descricao = campos[1]?.Trim();
+                        var valorPadraoStr = campos[2]?.Trim();
+                        var unidade = campos[3]?.Trim();
+                        var nomeCategoriaCsv = campos[4]?.Trim();
+                        var nomeFornecedorCsv = campos[5]?.Trim();
+
+                        if (string.IsNullOrEmpty(nomeProduto) || string.IsNullOrEmpty(valorPadraoStr) || string.IsNullOrEmpty(nomeCategoriaCsv) || string.IsNullOrEmpty(nomeFornecedorCsv))
+                        {
+                            TempData["Erro"] = $"Importação cancelada na linha {numeroDaLinha}: Existem campos obrigatórios (Nome, Valor Padrão, Categoria ou Fornecedor) vazios.";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        if (!decimal.TryParse(valorPadraoStr, System.Globalization.NumberStyles.Any, new System.Globalization.CultureInfo("pt-BR"), out decimal valorPadrao))
+                        {
+                            TempData["Erro"] = $"Importação cancelada na linha {numeroDaLinha}: O valor '{valorPadraoStr}' não é um número decimal válido.";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        var categoriaEncontrada = categoriasExistentes
+                            .FirstOrDefault(c => c.Nome.Equals(nomeCategoriaCsv, StringComparison.OrdinalIgnoreCase));
+
+                        var fornecedorEncontrado = fornecedoresExistentes
+                            .FirstOrDefault(f => f.Nome.Equals(nomeFornecedorCsv, StringComparison.OrdinalIgnoreCase));
+
+                        if (categoriaEncontrada == null)
+                        {
+                            TempData["Erro"] = $"Importação cancelada: A Categoria '{nomeCategoriaCsv}' (linha {numeroDaLinha}) não foi encontrada no sistema. Cadastre-a antes de importar.";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        if (fornecedorEncontrado == null)
+                        {
+                            TempData["Erro"] = $"Importação cancelada: O Fornecedor '{nomeFornecedorCsv}' (linha {numeroDaLinha}) não foi encontrado no sistema. Cadastre-o antes de importar.";
+                            return RedirectToAction(nameof(Index));
+                        }
+
+                        var produtoAtual = produtosExistentes.FirstOrDefault(p =>
+                            p.Nome.Equals(nomeProduto, StringComparison.OrdinalIgnoreCase) &&
+                            p.FornecedorId == fornecedorEncontrado.Id);
+
+                        if (produtoAtual != null)
+                        {
+                            produtoAtual.Descricao = descricao;
+                            produtoAtual.ValorPadrao = valorPadrao;
+                            produtoAtual.Unidade = string.IsNullOrEmpty(unidade) ? produtoAtual.Unidade : unidade;
+                            produtoAtual.CategoriaId = categoriaEncontrada.Id;
+                            produtoAtual.Ativo = true;
+
+                            _context.ProdutosFornecedor.Update(produtoAtual);
+                            totalAtualizado++;
+                        }
+                        else
+                        {
+                            var novoProduto = new ProdutoFornecedor
+                            {
+                                Nome = nomeProduto,
+                                Descricao = descricao,
+                                ValorPadrao = valorPadrao,
+                                Unidade = string.IsNullOrEmpty(unidade) ? "Unidade" : unidade,
+                                CategoriaId = categoriaEncontrada.Id,
+                                FornecedorId = fornecedorEncontrado.Id,
+                                Ativo = true,
+                                DataCadastro = DateTime.Now
+                            };
+
+                            _context.ProdutosFornecedor.Add(novoProduto);
+                            totalInserido++;
+                        }
+                    }
+                }
+
+                if (totalInserido > 0 || totalAtualizado > 0)
+                {
+                    RegistrarLog("IMPORT", "ProdutosFornecedor", $"Importação CSV Produtos: {totalInserido} inseridos, {totalAtualizado} atualizados.", empIdLogado);
+
+                    await _context.SaveChangesAsync();
+                    TempData["Sucesso"] = $"Importação finalizada com sucesso! {totalInserido} novos produtos adicionados e {totalAtualizado} atualizados.";
+                }
+                else
+                {
+                    TempData["Erro"] = "Nenhum dado válido para importar.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Erro"] = "Erro crítico ao processar o arquivo de produtos: " + ex.Message;
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

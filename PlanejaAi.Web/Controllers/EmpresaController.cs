@@ -5,6 +5,7 @@ using PlanejaAi.Data;
 using PlanejaAi.Models;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace PlanejaAi.Controllers
 {
@@ -66,6 +67,55 @@ namespace PlanejaAi.Controllers
 
             var lista = await empresasQuery.ToListAsync();
             return View(lista);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportarCsv()
+        {
+            var empresas = await _context.Empresas
+                .AsNoTracking()
+                .OrderBy(e => e.Nome)
+                .ToListAsync();
+
+            if (!empresas.Any())
+            {
+                TempData["Erro"] = "Nenhuma empresa encontrada para exportação.";
+                return RedirectToAction(nameof(Cadastro));
+            }
+
+            var csv = new StringBuilder();
+
+            csv.AppendLine("Empresa ID;Razão Social/Nome;CPF/CNPJ;E-mail;Telefone;Status;CEP;Endereço;Número;Bairro;Cidade;Estado;Data de Cadastro");
+
+            foreach (var emp in empresas)
+            {
+                string nome = emp.Nome?.Replace(";", ",") ?? "";
+                string email = emp.Email?.Replace(";", ",") ?? "";
+                string status = emp.Status?.Replace(";", ",") ?? "";
+                string endereco = emp.Endereco?.Replace(";", ",") ?? "";
+                string numero = emp.Numero?.Replace(";", ",") ?? "";
+                string bairro = emp.Bairro?.Replace(";", ",") ?? "";
+                string cidade = emp.Cidade?.Replace(";", ",") ?? "";
+                string estado = emp.Estado?.Replace(";", ",") ?? "";
+
+                string dataCadastro = emp.DataCadastro.ToString("dd/MM/yyyy HH:mm:ss");
+
+                string cpfCnpj = !string.IsNullOrEmpty(emp.CpfCnpj) ? $"=\"{emp.CpfCnpj.Trim()}\"" : "";
+                string telefone = !string.IsNullOrEmpty(emp.Telefone) ? $"=\"{emp.Telefone.Trim()}\"" : "";
+                string cep = !string.IsNullOrEmpty(emp.Cep) ? $"=\"{emp.Cep.Trim()}\"" : "";
+
+                csv.AppendLine($"{emp.Id};{nome};{cpfCnpj};{email};{telefone};{status};{cep};{endereco};{numero};{bairro};{cidade};{estado};{dataCadastro}");
+            }
+
+            var preamble = Encoding.UTF8.GetPreamble();
+            var contentBytes = Encoding.UTF8.GetBytes(csv.ToString());
+            var bytes = preamble.Concat(contentBytes).ToArray();
+
+            string nomeArquivo = $"Relatorio_Empresas_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+            await RegistrarLog("EXPORT", $"Exportação de {empresas.Count} empresas realizada.");
+
+            return File(bytes, "text/csv; charset=utf-8", nomeArquivo);
         }
 
         [HttpGet]

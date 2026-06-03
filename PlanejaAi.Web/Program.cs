@@ -4,7 +4,6 @@ using PlanejaAi.Data;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 var chaveCriptografia = builder.Configuration["CriptografiaSettings:ChaveSecreta"];

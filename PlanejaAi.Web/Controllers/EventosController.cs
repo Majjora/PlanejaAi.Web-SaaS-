@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using PlanejaAi.Data;
 using PlanejaAi.Models;
 using System.Security.Claims;
+using System.Text;
 
 namespace PlanejaAi.Controllers
 {
@@ -559,6 +560,284 @@ namespace PlanejaAi.Controllers
             }
 
             return RedirectToAction("ListaConvidados", new { id = eventoId });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExportarConvidadosCsv(int eventoId)
+        {
+            try
+            {
+                var evento = await _context.Eventos.FindAsync(eventoId);
+                if (evento == null) return NotFound();
+
+                var convidados = await _context.Convidados
+                                               .Where(c => c.EventoId == eventoId)
+                                               .OrderBy(c => c.Nome)
+                                               .ToListAsync();
+
+                var role = User.FindFirstValue(ClaimTypes.Role)?.ToLower();
+                bool isOwner = role == "owner";
+
+                var builder = new StringBuilder();
+
+                if (isOwner)
+                {
+                    builder.AppendLine("Empresa ID;Nome;Status;DataCadastro");
+                }
+                else
+                {
+                    builder.AppendLine("Nome;Status;DataCadastro");
+                }
+
+                foreach (var c in convidados)
+                {
+                    string statusTxt = c.Confirmacao switch
+                    {
+                        1 => "Confirmado",
+                        2 => "Em Dúvida",
+                        _ => "Não Confirmado"
+                    };
+
+                    if (isOwner)
+                    {
+                        builder.AppendLine($"{evento.EmpresaId};{c.Nome};{statusTxt};{c.DataCadastro:dd/MM/yyyy HH:mm}");
+                    }
+                    else
+                    {
+                        builder.AppendLine($"{c.Nome};{statusTxt};{c.DataCadastro:dd/MM/yyyy HH:mm}");
+                    }
+                }
+
+                await RegistrarLog("EXPORT", $"Lista de convidados exportada (Total: {convidados.Count} registros).", eventoId);
+
+                var utf8ComBom = new UTF8Encoding(true);
+                byte[] preamble = utf8ComBom.GetPreamble();
+                byte[] content = utf8ComBom.GetBytes(builder.ToString());
+                byte[] finalBytes = preamble.Concat(content).ToArray();
+
+                return File(finalBytes, "text/csv", $"Convidados_{evento.Nome.Replace(" ", "_")}.csv");
+            }
+            catch (Exception ex)
+            {
+                TempData["Erro"] = $"Erro ao exportar arquivo: {ex.Message}";
+                return RedirectToAction(nameof(ListaConvidados), new { id = eventoId });
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ImportarConvidadosCsv(IFormFile arquivoCsv, int eventoId)
+        {
+            if (arquivoCsv == null || arquivoCsv.Length == 0)
+            {
+                TempData["Erro"] = "Por favor, selecione um arquivo CSV válido.";
+                return RedirectToAction(nameof(ListaConvidados), new { id = eventoId });
+            }
+
+            try
+            {
+                int totalInserido = 0;
+                int totalAtualizado = 0;
+                int numeroDaLinha = 1;
+
+                var convidadosExistentes = await _context.Convidados
+                    .Where(c => c.EventoId == eventoId)
+                    .ToListAsync();
+
+                using (var stream = new StreamReader(arquivoCsv.OpenReadStream(), Encoding.UTF8))
+                {
+                    var cabecalho = await stream.ReadLineAsync();
+
+                    if (cabecalho != null && (cabecalho.ToLower().Contains("cnpj") || cabecalho.ToLower().Contains("cpf") || cabecalho.ToLower().Contains("fornecedor")))
+                    {
+                        TempData["Erro"] = "Importação cancelada: O layout do arquivo enviado é incompatível com o modelo esperado para esta tela.";
+                        return RedirectToAction(nameof(ListaConvidados), new { id = eventoId });
+                    }
+
+                    while (!stream.EndOfStream)
+                    {
+                        var linha = await stream.ReadLineAsync();
+                        numeroDaLinha++;
+
+                        if (string.IsNullOrWhiteSpace(linha)) continue;
+
+                        var colunas = linha.Split(';');
+
+                        var nome = colunas.Length > 0 ? colunas[0]?.Trim() : string.Empty;
+                        var statusTexto = colunas.Length > 1 ? colunas[1]?.Trim().Replace("\"", "") : string.Empty;
+
+                        if (string.IsNullOrEmpty(nome))
+                        {
+                            TempData["Erro"] = $"Erro na linha {numeroDaLinha}: Existem campos obrigatórios vazios. Certifique-se de preencher todas as informações necessárias na planilha.";
+                            return RedirectToAction(nameof(ListaConvidados), new { id = eventoId });
+                        }
+
+                        if (!string.IsNullOrEmpty(statusTexto) && System.Text.RegularExpressions.Regex.IsMatch(statusTexto, @"\d"))
+                        {
+                            TempData["Erro"] = $"Erro na linha {numeroDaLinha}: O formato dos dados é inválido para este tipo de cadastro. Certifique-se de que selecionou o arquivo correto.";
+                            return RedirectToAction(nameof(ListaConvidados), new { id = eventoId });
+                        }
+
+                        int statusId = 0;
+                        var statusLower = statusTexto.ToLower();
+
+                        if (statusLower.Contains("confirmado") && !statusLower.Contains("não") && !statusLower.Contains("nao"))
+                            statusId = 1;
+                        else if (statusLower.Contains("dúvida") || statusLower.Contains("duvida"))
+                            statusId = 2;
+
+                        var convidadoAtual = convidadosExistentes.FirstOrDefault(c => c.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase));
+
+                        if (convidadoAtual != null)
+                        {
+                            convidadoAtual.Confirmacao = statusId;
+                            _context.Convidados.Update(convidadoAtual);
+                            totalAtualizado++;
+                        }
+                        else
+                        {
+                            _context.Convidados.Add(new Convidado
+                            {
+                                EventoId = eventoId,
+                                Nome = nome,
+                                Confirmacao = statusId,
+                                DataCadastro = DateTime.Now
+                            });
+                            totalInserido++;
+                        }
+                    }
+                }
+
+                if (totalInserido > 0 || totalAtualizado > 0)
+                {
+                    await _context.SaveChangesAsync();
+                    await RegistrarLog("CREATE", $"Importação CSV: {totalInserido} inseridos, {totalAtualizado} atualizados.", eventoId);
+                    TempData["Sucesso"] = $"Importação finalizada com sucesso! {totalInserido} novos convidados adicionados e {totalAtualizado} atualizados.";
+                }
+                else
+                {
+                    TempData["Erro"] = "Nenhum dado válido para importar.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Erro"] = "Erro crítico ao processar o arquivo: " + ex.Message;
+            }
+
+            return RedirectToAction(nameof(ListaConvidados), new { id = eventoId });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "owner,admin")]
+        public async Task<IActionResult> ExportarCsv()
+        {
+            var role = User.FindFirstValue(ClaimTypes.Role)?.ToLower();
+            int empIdLogado = GetEmpresaId();
+            bool isOwner = role == "owner";
+
+            if (role != "admin" && role != "owner")
+            {
+                TempData["Erro"] = "Acesso negado. Apenas Administradores podem exportar a base de eventos.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var query = _context.Eventos
+                .Include(e => e.Cliente)
+                .Include(e => e.ProdutoLocal)
+                .Include(e => e.EventoItens)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!isOwner)
+            {
+                query = query.Where(e => e.EmpresaId == empIdLogado);
+            }
+
+            var eventos = await query.OrderBy(e => e.DataEvento).ToListAsync();
+
+            if (!eventos.Any())
+            {
+                TempData["Erro"] = "Nenhum evento encontrado para exportação.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var csv = new StringBuilder();
+
+            if (isOwner)
+            {
+                csv.AppendLine("Empresa ID;Nome do Evento;Tipo;Status;Data do Evento;Cliente;Tipo de Local;Nome do Local;Custo do Local;Valor Total Orçamento;Total de Gastos;Saldo Disponível;Qtd Convidados;Privacidade;Data de Criação");
+            }
+            else
+            {
+                csv.AppendLine("Nome do Evento;Tipo;Status;Data do Evento;Cliente;Tipo de Local;Nome do Local;Custo do Local;Valor Total Orçamento;Total de Gastos;Saldo Disponível;Qtd Convidados;Privacidade;Data de Criação");
+            }
+
+            foreach (var e in eventos)
+            {
+                string nome = e.Nome?.Replace(";", ",") ?? "";
+                string tipo = e.Tipo?.Replace(";", ",") ?? "-";
+                string status = e.Status ?? "-";
+                string dataEvento = e.DataEvento.ToString("dd/MM/yyyy HH:mm");
+                string cliente = e.Cliente?.Nome?.Replace(";", ",") ?? "Sem Cliente";
+
+                string tipoLocal = "";
+                string nomeLocal = "";
+                decimal custoLocalDecimal = 0;
+
+                if (e.LocalTipo == 1)
+                {
+                    tipoLocal = "Próprio";
+                    nomeLocal = e.NomeLocalProprio?.Replace(";", ",") ?? "Não informado";
+                    custoLocalDecimal = e.ValorLocalProprio;
+                }
+                else if (e.LocalTipo == 2)
+                {
+                    tipoLocal = "Parceiro/Fornecedor";
+                    nomeLocal = e.ProdutoLocal?.Nome?.Replace(";", ",") ?? "Fornecedor/Local não encontrado";
+                    custoLocalDecimal = e.ProdutoLocal?.ValorPadrao ?? 0;
+                }
+                else
+                {
+                    tipoLocal = "Não definido";
+                    nomeLocal = "-";
+                }
+
+                decimal valorOrcamentoDecimal = e.ValorTotalOrcamento;
+                decimal totalItensDecimal = e.EventoItens?.Sum(i => i.Valor) ?? 0;
+
+                decimal totalGastosDecimal = custoLocalDecimal + totalItensDecimal;
+                decimal saldoDisponivelDecimal = valorOrcamentoDecimal - totalGastosDecimal;
+
+                string custoLocal = $"=\"{custoLocalDecimal.ToString("F2", new System.Globalization.CultureInfo("pt-BR"))}\"";
+                string valorOrcamento = $"=\"{valorOrcamentoDecimal.ToString("F2", new System.Globalization.CultureInfo("pt-BR"))}\"";
+                string totalGastos = $"=\"{totalGastosDecimal.ToString("F2", new System.Globalization.CultureInfo("pt-BR"))}\"";
+                string saldoDisponivel = $"=\"{saldoDisponivelDecimal.ToString("F2", new System.Globalization.CultureInfo("pt-BR"))}\"";
+
+                string qtdConvidados = e.NumeroConvidados?.ToString() ?? "0";
+                string privacidade = e.Privacidade?.Replace(";", ",") ?? "-";
+                string dataCriacao = e.DataCriacao.ToString("dd/MM/yyyy HH:mm");
+
+                if (isOwner)
+                {
+                    csv.AppendLine($"{e.EmpresaId};{nome};{tipo};{status};{dataEvento};{cliente};{tipoLocal};{nomeLocal};{custoLocal};{valorOrcamento};{totalGastos};{saldoDisponivel};{qtdConvidados};{privacidade};{dataCriacao}");
+                }
+                else
+                {
+                    csv.AppendLine($"{nome};{tipo};{status};{dataEvento};{cliente};{tipoLocal};{nomeLocal};{custoLocal};{valorOrcamento};{totalGastos};{saldoDisponivel};{qtdConvidados};{privacidade};{dataCriacao}");
+                }
+            }
+
+            var preamble = Encoding.UTF8.GetPreamble();
+            var contentBytes = Encoding.UTF8.GetBytes(csv.ToString());
+            var bytes = preamble.Concat(contentBytes).ToArray();
+
+            string nomeArquivo = $"Relatorio_Eventos_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+            await RegistrarLog("EXPORT", $"Exportação de {eventos.Count} eventos realizada com sucesso.");
+
+            return File(bytes, "text/csv", nomeArquivo);
         }
     }
 }

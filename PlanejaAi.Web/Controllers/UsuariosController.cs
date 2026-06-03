@@ -5,6 +5,10 @@ using PlanejaAi.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace PlanejaAi.Controllers
 {
@@ -37,6 +41,80 @@ namespace PlanejaAi.Controllers
             return View(await query.ToListAsync());
         }
 
+        [HttpGet]
+        [Authorize(Roles = "owner,admin")]
+        public async Task<IActionResult> ExportarCsv()
+        {
+            var perfilLogado = User.FindFirstValue(ClaimTypes.Role);
+            var empIdLogado = int.Parse(User.FindFirstValue("EmpresaId") ?? "0");
+            bool isOwner = string.Equals(perfilLogado, "owner", StringComparison.OrdinalIgnoreCase);
+
+            var query = _context.Logins
+                .Include(l => l.Funcionario)
+                .Include(l => l.Empresa)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!isOwner)
+            {
+                if (empIdLogado == 0)
+                {
+                    TempData["Erro"] = "Não foi possível identificar sua empresa para exportar.";
+                    return RedirectToAction(nameof(Index));
+                }
+                query = query.Where(l => l.EmpresaId == empIdLogado);
+            }
+
+            var usuarios = await query.OrderBy(l => l.Funcionario.Nome).ToListAsync();
+
+            if (!usuarios.Any())
+            {
+                TempData["Erro"] = "Nenhum usuário encontrado para exportação.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var csv = new StringBuilder();
+
+            if (isOwner)
+            {
+                csv.AppendLine("Empresa ID;Nome;E-mail;CPF;Cargo;Perfil de Acesso;Data de Cadastro;Empresa");
+            }
+            else
+            {
+                csv.AppendLine("Nome;E-mail;CPF;Cargo;Perfil de Acesso;Data de Cadastro");
+            }
+
+            foreach (var user in usuarios)
+            {
+                string nome = user.Funcionario?.Nome?.Replace(";", ",") ?? "";
+                string email = user.Email ?? "";
+                string cargo = user.Funcionario?.Cargo?.Replace(";", ",") ?? "";
+                string perfil = user.PerfilAcesso?.ToUpper() ?? "USERS";
+                string dataCadastro = user.DataCadastro?.ToString("dd/MM/yyyy HH:mm:ss") ?? "";
+                string empresa = user.Empresa?.Nome?.Replace(";", ",") ?? "Sem Empresa / Global";
+
+                string cpfTexto = !string.IsNullOrEmpty(user.Funcionario?.Cpf) ? $"=\"{user.Funcionario.Cpf.Trim()}\"" : "";
+
+                if (isOwner)
+                {
+                    csv.AppendLine($"{user.EmpresaId};{nome};{email};{cpfTexto};{cargo};{perfil};{dataCadastro};{empresa}");
+                }
+                else
+                {
+                    csv.AppendLine($"{nome};{email};{cpfTexto};{cargo};{perfil};{dataCadastro}");
+                }
+            }
+
+            var preamble = Encoding.UTF8.GetPreamble();
+            var contentBytes = Encoding.UTF8.GetBytes(csv.ToString());
+            var bytes = preamble.Concat(contentBytes).ToArray();
+
+            string nomeArquivo = $"Relatorio_Usuarios_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+            await RegistrarLog("EXPORT", $"Exportação de {usuarios.Count} usuários realizada", isOwner ? 0 : empIdLogado);
+
+            return File(bytes, "text/csv; charset=utf-8", nomeArquivo);
+        }
 
         [HttpGet]
         public IActionResult Criar()

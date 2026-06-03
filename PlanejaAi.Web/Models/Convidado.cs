@@ -14,6 +14,9 @@ namespace PlanejaAi.Models
         [Column("even_id")]
         public int EventoId { get; set; }
 
+        [ForeignKey("EventoId")]
+        public virtual Evento Evento { get; set; }
+
         [Column("conv_nome")]
         public string Nome { get; set; }
 
