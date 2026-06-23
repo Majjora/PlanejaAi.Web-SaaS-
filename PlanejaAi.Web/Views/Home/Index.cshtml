@@ -5,39 +5,63 @@
 }
 
 <style>
-
     :root {
         --p-clara: #94B4C1;
         --p-bege: #EAE0CF;
         --p-escura: #213448;
         --p-media: #547792;
-        --bg-body: var(--p-bege);
+        --bg-body-gradient: var(--p-bege);
         --bg-card: #ffffff;
         --text-main: var(--p-escura);
         --text-muted: var(--p-media);
         --accent: var(--p-media);
         --border-card: var(--p-clara);
-        --banner-grad: linear-gradient(135deg, var(--p-media), var(--p-clara));
         --shadow-main: 0 8px 24px rgba(33, 52, 72, 0.1);
+        --banner-bg: linear-gradient(135deg, #ffffff 0%, #f4f7f9 100%);
+        --banner-border: var(--p-clara);
+        --banner-text: var(--p-escura);
+        --banner-text-muted: var(--p-media);
+        --banner-username: #d97706; 
+
+        --glass-bg: rgba(84, 119, 146, 0.08);
+        --glass-border: rgba(148, 180, 193, 0.3);
+        --glass-icon-bg: #547792;
+        --glass-icon-color: #ffffff;
+        --danger-main: #e74c3c;
+        --danger-bg-hover: rgba(231, 76, 60, 0.05);
+        --danger-border: rgba(231, 76, 60, 0.3);
     }
 
     [data-theme="dark"] {
-        --bg-body: var(--p-escura);
+        --bg-body-gradient: linear-gradient(135deg, var(--p-escura) 0%, #15222f 100%);
         --bg-card: var(--p-media);
         --text-main: var(--p-bege);
         --text-muted: var(--p-bege);
         --accent: var(--p-bege);
         --border-card: rgba(148, 180, 193, 0.2);
-        --banner-grad: linear-gradient(135deg, #111e29, #1a2a3a);
         --shadow-main: 0 10px 30px rgba(0,0,0,0.5);
+        --banner-bg: linear-gradient(135deg, #6c8fae 0%, var(--p-media) 100%);
+        --banner-border: rgba(148, 180, 193, 0.15);
+        --banner-text: #EAE0CF;
+        --banner-text-muted: rgba(234, 224, 207, 0.7);
+        --banner-username: #f1c40f; 
+
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-icon-bg: rgba(255, 255, 255, 0.1);
+        --glass-icon-color: #00f2fe;
+        --danger-main: #ff6b6b;
+        --danger-bg-hover: rgba(255, 107, 107, 0.1);
+        --danger-border: rgba(255, 107, 107, 0.2);
     }
 
-   
     body {
-        background-color: var(--bg-body) !important;
+        background: var(--bg-body-gradient) !important;
+        background-attachment: fixed !important;
         color: var(--text-main);
         transition: all 0.3s ease;
         font-family: 'Segoe UI', sans-serif;
+        min-height: 100vh;
     }
 
     .home-container {
@@ -46,13 +70,86 @@
         margin: 0 auto;
     }
 
-    .welcome-banner {
-        background: var(--banner-grad);
-        padding: 40px;
-        border-radius: 20px;
-        margin-bottom: 40px;
+    .hero-banner {
+        background: var(--banner-bg);
+        border: 1px solid var(--banner-border);
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        margin-bottom: 2.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 2rem;
         box-shadow: var(--shadow-main);
-        border: none;
+        color: var(--banner-text);
+        transition: all 0.3s ease;
+    }
+
+    .hero-content {
+        max-width: 600px;
+    }
+
+    .hero-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+        .hero-title span {
+            color: var(--banner-username);
+            transition: color 0.3s ease;
+        }
+
+    .hero-subtitle {
+        color: var(--banner-text-muted);
+        font-size: 1.05rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .hero-date-widget {
+        background: var(--glass-bg);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--glass-border);
+        padding: 1.2rem 1.8rem;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .hero-date-icon {
+        background: var(--glass-icon-bg);
+        color: var(--glass-icon-color);
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .hero-date-info h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--banner-text);
+        line-height: 1.2;
+    }
+
+    .hero-date-info p {
+        margin: 0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+        color: var(--banner-text-muted);
     }
 
     .card-modulo {
@@ -60,80 +157,64 @@
         border: 1px solid var(--border-card);
         border-radius: 20px;
         padding: 2.5rem 1.5rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-align: center;
         height: 100%;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
-        cursor: pointer;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: var(--shadow-main);
+        text-decoration: none;
+        color: var(--text-main);
     }
 
         .card-modulo:hover {
             transform: translateY(-8px);
-            border-color: var(--p-media);
-            background-color: #ffffff;
+            border-color: var(--accent);
         }
 
-    [data-theme="dark"] .card-modulo:hover {
-        background-color: var(--p-media);
-        border-color: var(--p-bege);
-    }
-
-    .icon-box {
+    .card-icon {
         font-size: 2.5rem;
         color: var(--accent);
-        margin-bottom: 1rem;
-        transition: 0.3s;
+        margin-bottom: 1.2rem;
+        transition: transform 0.3s ease;
     }
 
-    .card-modulo:hover .icon-box {
+    .card-modulo:hover .card-icon {
         transform: scale(1.1);
     }
 
     .card-title {
-        font-weight: 700;
         font-size: 1.3rem;
+        font-weight: 700;
         margin-bottom: 0.5rem;
         color: var(--text-main);
     }
 
-    .card-text {
-        color: var(--text-muted);
+    .card-desc {
         font-size: 0.95rem;
-        margin-bottom: 0;
+        color: var(--text-muted);
+        margin: 0;
         opacity: 0.8;
     }
 
+    .card-danger {
+        border-color: var(--danger-border);
+    }
+
+        .card-danger .card-icon,
+        .card-danger .card-title {
+            color: var(--danger-main);
+        }
+
+        .card-danger:hover {
+            border-color: var(--danger-main);
+            background-color: var(--danger-bg-hover);
+        }
+
     a {
         text-decoration: none !important;
-        color: inherit !important;
-    }
-
-    .chatbot-fab {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 65px;
-        height: 65px;
-        background-color: var(--p-media);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 26px;
-        cursor: pointer;
-        box-shadow: 0 8px 25px rgba(84, 119, 146, 0.4);
-        z-index: 1000;
-        transition: 0.3s;
-    }
-
-    [data-theme="dark"] .chatbot-fab {
-        background-color: var(--p-clara);
-        color: var(--p-escura);
     }
 
     .footer-politica {
@@ -146,22 +227,31 @@
     }
 
         .footer-politica a {
-            color: var(--p-media) !important;
+            color: var(--accent) !important;
             font-weight: 600;
         }
-
-    [data-theme="dark"] .footer-politica a {
-        color: var(--p-bege) !important;
-    }
 </style>
 
 <div class="home-container">
-    <div class="welcome-banner text-white">
-        <h1 class="fw-bold">
-            <i class="fa-regular fa-id-card me-2"></i>
-            Bom dia, <span style="color: var(--p-bege);">@ViewBag.NomeUsuario</span>!
-        </h1>
-        <p class="fs-5 mb-0 opacity-75">Vamos planejar algo incrível hoje?</p>
+
+    <div class="hero-banner">
+        <div class="hero-content">
+            <h1 class="hero-title">Olá, <span>@ViewBag.NomeUsuario</span>! 🚀</h1>
+            <p class="hero-subtitle">
+                Bem-vindo de volta ao seu painel de controle. Escolha um dos módulos abaixo para gerenciar seus clientes, parceiros e cronogramas.
+            </p>
+        </div>
+
+        <div class="hero-date-widget">
+            <div class="hero-date-icon">
+                <i class="fa-solid fa-calendar-day"></i>
+            </div>
+            <div class="hero-date-info">
+                <p>Cronograma</p>
+                <h4>@DateTime.Now.ToString("dd 'de' MMM.")</h4>
+                <p style="text-transform: capitalize; font-size: 0.8rem; margin-top: 2px;">@DateTime.Now.ToString("dddd", new System.Globalization.CultureInfo("pt-BR"))</p>
+            </div>
+        </div>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -169,9 +259,9 @@
         <div class="col">
             <a href="@Url.Action("Index", "Eventos")">
                 <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-rectangle-list"></i></div>
-                    <h5 class="card-title">Gerenciar Eventos</h5>
-                    <p class="card-text">Visualize, crie e edite seus eventos ativos.</p>
+                    <i class="fa-solid fa-rectangle-list card-icon"></i>
+                    <h3 class="card-title">Gerenciar Eventos</h3>
+                    <p class="card-desc">Visualize, crie e edite seus eventos ativos.</p>
                 </div>
             </a>
         </div>
@@ -179,9 +269,9 @@
         <div class="col">
             <a asp-controller="Clientes" asp-action="Index">
                 <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-users-gear"></i></div>
-                    <h5 class="card-title">Clientes</h5>
-                    <p class="card-text">Gestão da sua carteira de clientes.</p>
+                    <i class="fa-solid fa-users-gear card-icon"></i>
+                    <h3 class="card-title">Clientes</h3>
+                    <p class="card-desc">Gestão da sua carteira de clientes.</p>
                 </div>
             </a>
         </div>
@@ -189,9 +279,9 @@
         <div class="col">
             <a href="@Url.Action("Index", "Fornecedores")">
                 <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-handshake"></i></div>
-                    <h5 class="card-title">Fornecedores</h5>
-                    <p class="card-text">Sua rede de parceiros.</p>
+                    <i class="fa-solid fa-handshake card-icon"></i>
+                    <h3 class="card-title">Fornecedores</h3>
+                    <p class="card-desc">Sua rede de parceiros.</p>
                 </div>
             </a>
         </div>
@@ -199,9 +289,9 @@
         <div class="col">
             <a href="@Url.Action("Index", "CategoriasServico")">
                 <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-tags"></i></div>
-                    <h5 class="card-title">Categorias</h5>
-                    <p class="card-text">Organize seus produtos e serviços.</p>
+                    <i class="fa-solid fa-tags card-icon"></i>
+                    <h3 class="card-title">Categorias</h3>
+                    <p class="card-desc">Organize seus produtos e serviços.</p>
                 </div>
             </a>
         </div>
@@ -209,9 +299,9 @@
         <div class="col">
             <a href="@Url.Action("Index", "ProdutosFornecedor")">
                 <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-box-open"></i></div>
-                    <h5 class="card-title">Produtos</h5>
-                    <p class="card-text">Catálogo global da sua empresa.</p>
+                    <i class="fa-solid fa-box-open card-icon"></i>
+                    <h3 class="card-title">Produtos</h3>
+                    <p class="card-desc">Catálogo global da sua empresa.</p>
                 </div>
             </a>
         </div>
@@ -221,39 +311,35 @@
             <div class="col">
                 <a href="@Url.Action("Index", "Dashboard")">
                     <div class="card-modulo">
-                        <div class="icon-box"><i class="fa-solid fa-chart-line"></i></div>
-                        <h5 class="card-title">Dashboard</h5>
-                        <p class="card-text">Métricas, gráficos e visão geral do negócio.</p>
+                        <i class="fa-solid fa-chart-line card-icon"></i>
+                        <h3 class="card-title">Dashboard</h3>
+                        <p class="card-desc">Métricas, gráficos e visão geral do negócio.</p>
                     </div>
                 </a>
             </div>
         }
 
-        
         @if (perfil == "owner")
         {
             <div class="col">
                 <a href="@Url.Action("Cadastro", "Empresa")">
                     <div class="card-modulo">
-                        <div class="icon-box">
-                            <i class="fa-solid fa-building-columns"></i>
-                        </div>
-                        <h5 class="card-title">Nova Empresa</h5>
-                        <p class="card-text">Configurações globais e acessos.</p>
+                        <i class="fa-solid fa-building-columns card-icon"></i>
+                        <h3 class="card-title">Nova Empresa</h3>
+                        <p class="card-desc">Configurações globais e acessos.</p>
                     </div>
                 </a>
             </div>
         }
 
-      
         @if (perfil == "admin" || perfil == "owner")
         {
             <div class="col">
                 <a href="@Url.Action("Index", "Usuarios")">
                     <div class="card-modulo">
-                        <div class="icon-box"><i class="fa-solid fa-user-gear"></i></div>
-                        <h5 class="card-title">Cadastrar Usuário</h5>
-                        <p class="card-text">Gerencie a equipe e acessos.</p>
+                        <i class="fa-solid fa-user-gear card-icon"></i>
+                        <h3 class="card-title">Cadastrar Usuário</h3>
+                        <p class="card-desc">Gerencie a equipe e acessos.</p>
                     </div>
                 </a>
             </div>
@@ -261,9 +347,9 @@
             <div class="col">
                 <a href="@Url.Action("Index", "Logs")">
                     <div class="card-modulo">
-                        <div class="icon-box"><i class="fa-solid fa-box-archive"></i></div>
-                        <h5 class="card-title">Logs</h5>
-                        <p class="card-text">Histórico de ações no sistema.</p>
+                        <i class="fa-solid fa-box-archive card-icon"></i>
+                        <h3 class="card-title">Logs</h3>
+                        <p class="card-desc">Histórico de ações no sistema.</p>
                     </div>
                 </a>
             </div>
@@ -271,22 +357,19 @@
 
         <div class="col">
             <a href="@Url.Action("Sair", "Login")">
-                <div class="card-modulo">
-                    <div class="icon-box"><i class="fa-solid fa-right-from-bracket"></i></div>
-                    <h5 class="card-title">Sair</h5>
-                    <p class="card-text">Finalizar sessão com segurança.</p>
+                <div class="card-modulo card-danger">
+                    <i class="fa-solid fa-right-from-bracket card-icon"></i>
+                    <h3 class="card-title">Sair</h3>
+                    <p class="card-desc">Finalizar sessão com segurança.</p>
                 </div>
             </a>
         </div>
+
     </div>
 
     <div class="footer-politica">
-        <p>&copy; 2026 PlanejaAi - Soluções Integradas</p>
+        <p>&copy; @DateTime.Now.Year PlanejaAi - Soluções Integradas</p>
         <a href="#">Políticas de Privacidade</a> |
         <a href="#">Termos de Uso</a>
     </div>
-</div>
-
-<div class="chatbot-fab" onclick="alert('IA Inicializando...')">
-    <i class="fa-solid fa-robot"></i>
 </div>

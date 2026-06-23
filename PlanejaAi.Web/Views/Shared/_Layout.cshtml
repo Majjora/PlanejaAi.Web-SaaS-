@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@{
+    var perfil = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+}
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8" />
@@ -16,12 +20,14 @@
                 --bg-fundo: #ffffff;
                 --texto-principal: var(--cor-escura);
                 --bg-navbar: rgba(255, 255, 255, 0.9);
+                --menu-hover: var(--cor-media);
             }
 
             [data-theme="dark"] {
                 --bg-fundo: var(--cor-escura);
                 --texto-principal: var(--cor-bege);
                 --bg-navbar: rgba(33, 52, 72, 0.9);
+                --menu-hover: var(--cor-clara);
             }
 
             body {
@@ -31,7 +37,6 @@
                 margin: 0;
                 min-height: 100vh;
             }
-
 
             .custom-navbar {
                 background-color: var(--bg-navbar);
@@ -50,11 +55,9 @@
                 transition: background-color 0.3s ease, padding 0.3s ease;
             }
 
-
             main {
                 padding-top: 80px;
             }
-
 
             .custom-logo-size {
                 height: 45px;
@@ -72,7 +75,6 @@
             [data-theme="dark"] .logo-dark {
                 display: block;
             }
-
 
             .theme-toggle-btn {
                 background: transparent;
@@ -114,6 +116,18 @@
                     transform: rotate(45deg);
                 }
 
+            .menu-btn {
+                color: var(--texto-principal);
+                font-size: 1.5rem;
+                cursor: pointer;
+                transition: transform 0.2s, color 0.2s;
+            }
+
+                .menu-btn:hover {
+                    color: var(--cor-media);
+                    transform: scale(1.1);
+                }
+
             .profile-img {
                 width: 40px;
                 height: 40px;
@@ -121,7 +135,6 @@
                 border: 2px solid var(--cor-media);
                 object-fit: cover;
             }
-
 
             .table {
                 color: var(--texto-principal) !important;
@@ -137,15 +150,56 @@
                 border: 1px solid var(--cor-media);
                 color: var(--texto-principal);
             }
+
+            .offcanvas-planeja {
+                background-color: var(--bg-navbar);
+                color: var(--texto-principal);
+                backdrop-filter: blur(15px);
+            }
+
+            .custom-menu-list .list-group-item {
+                background-color: transparent;
+                color: var(--texto-principal);
+                border: none;
+                border-bottom: 1px solid rgba(148, 180, 193, 0.2);
+                padding: 15px 25px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+                .custom-menu-list .list-group-item:hover {
+                    background-color: var(--menu-hover);
+                    color: var(--bg-fundo);
+                    padding-left: 35px; 
+                }
+
+            [data-theme="dark"] .btn-close {
+                filter: invert(1) grayscale(100%) brightness(200%);
+            }
+
+            .logo-link {
+                text-decoration: none;
+                color: var(--texto-principal);
+                transition: opacity 0.2s;
+            }
+
+                .logo-link:hover {
+                    opacity: 0.8;
+                    color: var(--texto-principal);
+                }
     </style>
 </head>
 <body>
     <header>
         <nav class="custom-navbar">
-            <div class="logo-container d-flex align-items-center">
-                <img src="/images/logo-claro.svg" class="logo-light custom-logo-size" />
-                <img src="/images/logo-escuro.svg" class="logo-dark custom-logo-size" />
-                <span class="ms-2 fw-bold d-none d-md-block" style="font-size: 1.4rem;">Planeja Aí</span>
+            <div class="logo-container d-flex align-items-center gap-3">
+                <i class="fa-solid fa-bars menu-btn" data-bs-toggle="offcanvas" data-bs-target="#menuOffcanvas" aria-controls="menuOffcanvas" title="Menu Principal"></i>
+
+                <a href="@Url.Action("Index", "Home")" class="d-flex align-items-center logo-link">
+                    <img src="/images/logo-claro.svg" class="logo-light custom-logo-size" />
+                    <img src="/images/logo-escuro.svg" class="logo-dark custom-logo-size" />
+                    <span class="ms-2 fw-bold d-none d-md-block" style="font-size: 1.4rem;">Planeja Aí</span>
+                </a>
             </div>
 
             <div class="nav-right d-flex align-items-center gap-3">
@@ -156,10 +210,70 @@
                     <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" /></svg>
                 </button>
 
-                <img src="https://via.placeholder.com/150" class="profile-img" alt="Foto Perfil">
             </div>
         </nav>
     </header>
+
+    <div class="offcanvas offcanvas-start offcanvas-planeja" tabindex="-1" id="menuOffcanvas" aria-labelledby="menuOffcanvasLabel">
+        <div class="offcanvas-header border-bottom" style="border-color: rgba(148, 180, 193, 0.2) !important;">
+            <h5 class="offcanvas-title fw-bold" id="menuOffcanvasLabel">
+                <i class="fa-solid fa-compass me-2" style="color: var(--cor-media);"></i> Menu Principal
+            </h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush custom-menu-list">
+
+                <a href="@Url.Action("Index", "Home")" class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-house fa-fw me-2"></i> Início
+                </a>
+
+                <a href="@Url.Action("Index", "Eventos")" class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-rectangle-list fa-fw me-2"></i> Gerenciar Eventos
+                </a>
+                <a asp-controller="Clientes" asp-action="Index" class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-users-gear fa-fw me-2"></i> Clientes
+                </a>
+                <a href="@Url.Action("Index", "Fornecedores")" class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-handshake fa-fw me-2"></i> Fornecedores
+                </a>
+                <a href="@Url.Action("Index", "CategoriasServico")" class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-tags fa-fw me-2"></i> Categorias
+                </a>
+                <a href="@Url.Action("Index", "ProdutosFornecedor")" class="list-group-item list-group-item-action">
+                    <i class="fa-solid fa-box-open fa-fw me-2"></i> Produtos
+                </a>
+
+                @if (perfil == "admin" || perfil == "owner")
+                {
+                    <a href="@Url.Action("Index", "Dashboard")" class="list-group-item list-group-item-action">
+                        <i class="fa-solid fa-chart-line fa-fw me-2"></i> Dashboard
+                    </a>
+                }
+
+                @if (perfil == "owner")
+                {
+                    <a href="@Url.Action("Cadastro", "Empresa")" class="list-group-item list-group-item-action">
+                        <i class="fa-solid fa-building-columns fa-fw me-2"></i> Nova Empresa
+                    </a>
+                }
+
+                @if (perfil == "admin" || perfil == "owner")
+                {
+                    <a href="@Url.Action("Index", "Usuarios")" class="list-group-item list-group-item-action">
+                        <i class="fa-solid fa-user-gear fa-fw me-2"></i> Cadastrar Usuário
+                    </a>
+                    <a href="@Url.Action("Index", "Logs")" class="list-group-item list-group-item-action">
+                        <i class="fa-solid fa-box-archive fa-fw me-2"></i> Logs
+                    </a>
+                }
+
+                <a href="@Url.Action("Sair", "Login")" class="list-group-item list-group-item-action text-danger mt-3" style="border-top: 1px solid rgba(148, 180, 193, 0.2);">
+                    <i class="fa-solid fa-right-from-bracket fa-fw me-2"></i> Sair
+                </a>
+            </div>
+        </div>
+    </div>
 
     <main role="main">
         <div class="container-fluid">
@@ -187,7 +301,6 @@
     </script>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

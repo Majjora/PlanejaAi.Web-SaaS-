@@ -34,9 +34,6 @@ namespace PlanejaAi.Controllers
                 .AsNoTracking()
                 .AsQueryable();
 
-            // ==========================================================
-            // PROTEÇÃO DE DADOS: ADMIN SÓ VÊ A PRÓPRIA EMPRESA
-            // ==========================================================
             if (!isOwner)
             {
                 query = query.Where(e => e.EmpresaId == empIdLogado);
@@ -44,7 +41,6 @@ namespace PlanejaAi.Controllers
 
             var todosEventos = await query.ToListAsync();
 
-            // DEFININDO AS DATAS PADRÕES (Se o usuário não filtrou, pega o ano atual)
             var inicio = dataInicio ?? new DateTime(DateTime.Now.Year, 1, 1);
             var fim = dataFim ?? new DateTime(DateTime.Now.Year, 12, 31);
 
@@ -53,22 +49,19 @@ namespace PlanejaAi.Controllers
 
             var model = new DashboardViewModel();
 
-            // ==========================================================
-            // FILTRO FINANCEIRO: USA A DATACRIACAO (Data de movimentação)
-            // ==========================================================
-            var eventosFiltrados = todosEventos
-                .Where(e => e.DataCriacao.Date >= inicio.Date && e.DataCriacao.Date <= fim.Date && e.Status != "Cancelado")
+            var eventosDoPeriodo = todosEventos
+                .Where(e => e.DataCriacao.Date >= inicio.Date && e.DataCriacao.Date <= fim.Date)
                 .ToList();
 
-            model.TotalEventosAtivos = eventosFiltrados.Count(e => e.Status == "Em Planejamento");
-            model.TotalEventosConcluidos = eventosFiltrados.Count(e => e.Status == "Concluído");
-            model.FaturamentoTotal = eventosFiltrados.Sum(e => e.ValorTotalOrcamento);
-            model.CustoTotal = eventosFiltrados.Sum(e => e.ValorLocalProprio + e.EventoItens.Sum(i => i.ValorVenda * i.Quantidade));
+            model.TotalEventosAtivos = eventosDoPeriodo.Count(e => e.Status == "Em Planejamento");
+            model.TotalEventosConcluidos = eventosDoPeriodo.Count(e => e.Status == "Concluído");
+            model.TotalEventosCancelados = eventosDoPeriodo.Count(e => e.Status == "Cancelado");
 
-            // =================================================================
-            // LÓGICA DO GRÁFICO: GRANULARIDADE DINÂMICA (Horas, Dias, Meses)
-            // Agrupando pela DataCriacao
-            // =================================================================
+            var eventosFiltrados = eventosDoPeriodo.Where(e => e.Status != "Cancelado").ToList();
+
+            model.FaturamentoTotal = eventosFiltrados.Sum(e => e.ValorTotalOrcamento);
+            model.CustoTotal = eventosFiltrados.Sum(e => e.ValorLocalProprio + e.EventoItens.Sum(i => i.ValorVenda * i.Quantidade)); ;
+
             var diffDias = (fim.Date - inicio.Date).TotalDays;
 
             var faturamentoLista = new List<decimal>();
@@ -76,7 +69,6 @@ namespace PlanejaAi.Controllers
 
             if (diffDias == 0)
             {
-                // 1. MESMO DIA: Agrupa de hora em hora (0h às 23h)
                 for (int h = 0; h < 24; h++)
                 {
                     var eventosDaHora = eventosFiltrados.Where(e => e.DataCriacao.Hour == h).ToList();
@@ -86,7 +78,6 @@ namespace PlanejaAi.Controllers
             }
             else if (diffDias <= 31)
             {
-                // 2. ATÉ 1 MÊS: Agrupa dia por dia
                 for (var dia = inicio.Date; dia <= fim.Date; dia = dia.AddDays(1))
                 {
                     var eventosDoDia = eventosFiltrados.Where(e => e.DataCriacao.Date == dia).ToList();
@@ -96,7 +87,6 @@ namespace PlanejaAi.Controllers
             }
             else
             {
-                // 3. MAIS DE 1 MÊS: Agrupa mês por mês (limite de 13 meses por segurança)
                 var inicioMes = new DateTime(inicio.Year, inicio.Month, 1);
                 var fimMes = new DateTime(fim.Year, fim.Month, 1);
                 int limite = 0;
@@ -110,14 +100,8 @@ namespace PlanejaAi.Controllers
                 }
             }
 
-            // Atribui as listas geradas dinamicamente ao Model
             model.FaturamentoMensal = faturamentoLista.ToList();
             model.CustoMensal = custoLista.ToList();
-            // =================================================================
-
-            // ==========================================================
-            // PRÓXIMOS EVENTOS: AQUI MANTEMOS A DATA DO EVENTO (FESTA)
-            // ==========================================================
             model.ProximosEventos = todosEventos
                 .Where(e => e.DataEvento.Date >= DateTime.Today && e.Status == "Em Planejamento")
                 .OrderBy(e => e.DataEvento)
@@ -157,9 +141,6 @@ namespace PlanejaAi.Controllers
                 .AsNoTracking()
                 .AsQueryable();
 
-            // ==========================================================
-            // PROTEÇÃO DE EXPORTAÇÃO: ADMIN SÓ EXPORTA A PRÓPRIA EMPRESA
-            // ==========================================================
             if (!isOwner)
             {
                 if (empIdLogado == 0)
@@ -170,9 +151,6 @@ namespace PlanejaAi.Controllers
                 query = query.Where(e => e.EmpresaId == empIdLogado);
             }
 
-            // ==========================================================
-            // FILTRA PELA DATACRIACAO NA HORA DE EXPORTAR O CSV
-            // ==========================================================
             var eventos = await query
                 .Where(e => e.DataCriacao.Date >= inicio && e.DataCriacao.Date <= fim && e.Status != "Cancelado")
                 .OrderBy(e => e.DataCriacao)
@@ -186,9 +164,6 @@ namespace PlanejaAi.Controllers
 
             var csv = new StringBuilder();
 
-            // ==========================================================
-            // CABEÇALHO DO CSV: DIFERENTE PARA OWNER E ADMIN
-            // ==========================================================
             if (isOwner)
             {
                 csv.AppendLine("Empresa ID;Nome do Evento;Data Movimentacao;Cliente;Status;Faturamento Bruto;Custo Total;Lucro Estimado");
@@ -206,9 +181,6 @@ namespace PlanejaAi.Controllers
                 var custo = ev.ValorLocalProprio + ev.EventoItens.Sum(i => i.ValorVenda * i.Quantidade);
                 var lucro = faturamento - custo;
 
-                // ==========================================================
-                // LINHAS DO CSV: IMPRIME A DATACRIACAO (Data da Movimentação)
-                // ==========================================================
                 if (isOwner)
                 {
                     csv.AppendLine($"{ev.EmpresaId};{nome};{ev.DataCriacao:dd/MM/yyyy};{cliente};{ev.Status};{faturamento:F2};{custo:F2};{lucro:F2}");
@@ -225,9 +197,6 @@ namespace PlanejaAi.Controllers
 
             string nomeArquivo = $"Relatorio_Financeiro_{inicio:yyyyMMdd}_a_{fim:yyyyMMdd}.csv";
 
-            // ==========================================================
-            // GERAÇÃO DE LOG DE AUDITORIA
-            // ==========================================================
             try
             {
                 var log = new Log
@@ -246,7 +215,7 @@ namespace PlanejaAi.Controllers
             }
             catch (Exception)
             {
-                // Ignora silenciosamente o erro no log para não impedir o download do usuário
+
             }
 
             return File(bytes, "text/csv", nomeArquivo);

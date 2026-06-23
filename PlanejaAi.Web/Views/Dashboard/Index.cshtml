@@ -324,6 +324,26 @@
             </div>
         </div>
     </div>
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card-planeja h-100 p-4">
+                <h5 class="fw-bold mb-4 titulo-card">
+                    <i class="fa-solid fa-bullseye me-2"></i> Status dos Eventos (Período)
+                </h5>
+                <div style="position: relative; height: 250px; width: 100%; display: flex; justify-content: center;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card-planeja h-100 p-4 d-flex flex-column justify-content-center align-items-center text-center" style="background-color: rgba(148, 180, 193, 0.05); border: 2px dashed var(--cor-clara);">
+                <i class="fa-solid fa-lightbulb fs-1 mb-3 opacity-50" style="color: var(--cor-media);"></i>
+                <h5 class="fw-bold titulo-card">Dica de Gestão</h5>
+                <p class="text-muted mb-0">Acompanhe a proporção de eventos concluídos contra os cancelados. Manter uma taxa baixa de cancelamentos é essencial para o crescimento contínuo e saúde da empresa. O gráfico ao lado reflete exatamente o período filtrado.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -412,6 +432,34 @@
         }
         });
 
+        var ctxStatus = document.getElementById('statusChart').getContext('2d');
+        var statusChart = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+        labels: ['Em Planejamento', 'Concluídos', 'Cancelados'],
+        datasets: [{
+        data: [@Model.TotalEventosAtivos, @Model.TotalEventosConcluidos, @Model.TotalEventosCancelados],
+        backgroundColor: ['#547792', '#28a745', '#dc3545'],
+        hoverOffset: 4,
+        borderWidth: 0
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+        legend: {
+        position: 'right',
+        labels: {
+        font: { weight: 'bold', family: "'Segoe UI', sans-serif" },
+        padding: 20
+        }
+        }
+        },
+        cutout: '70%'
+        }
+        });
+
         function aplicarTemaNoGrafico() {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark';
         var gridColor = isDark ? 'rgba(234, 224, 207, 0.1)' : 'rgba(33, 52, 72, 0.1)';
@@ -426,7 +474,13 @@
         financeiroChart.options.scales.x.ticks.color = fontColor;
         financeiroChart.options.plugins.legend.labels.color = fontColor;
         financeiroChart.update();
+
+        statusChart.options.plugins.legend.labels.color = fontColor;
+        statusChart.data.datasets[0].backgroundColor[0] = isDark ? '#94B4C1' : '#547792';
+        statusChart.update();
         }
+
+      
 
         aplicarTemaNoGrafico();
 
